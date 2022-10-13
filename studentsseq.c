@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
+#include <math.h>
+#include <omp.h> // Usado para padronizar a coleta do tempo de execução entre as implementações
+
 int ***geradorDeNotas(int R, int C, int A, int seed);
 
 int main(void)
@@ -10,6 +13,7 @@ int main(void)
     srand(seed);
 
     int ***notas = geradorDeNotas(R, C, A, seed);
+
     // PRINT NOTAS
     for (int i = 0; i < R; i++)
     {
@@ -32,32 +36,32 @@ int main(void)
     for (int i = 0; i < C; i++)
         maxCid[i] = (int *)malloc(sizeof(int) * C);
 
-    double ***estatsCid;
-    estatsCid = (double ***)malloc(sizeof(double **) * R);
+    float ***estatsCid;
+    estatsCid = (float ***)malloc(sizeof(float **) * R);
     for (int i = 0; i < C; i++)
-        estatsCid[i] = (double **)malloc(sizeof(double *) * C);
+        estatsCid[i] = (float **)malloc(sizeof(float *) * C);
 
     for (int i = 0; i < C; i++)
     {
         for (int j = 0; j < A; j++)
-            estatsCid[i][j] = (double *)malloc(sizeof(int) * 3); // mediana, media, desvpad
+            estatsCid[i][j] = (float *)malloc(sizeof(int) * 3); // mediana, media, desvpad
     }
 
     // variáveis de Região
     int *minReg = (int *)malloc(sizeof(int) * R);
     int *maxReg = (int *)malloc(sizeof(int) * R);
 
-    double **estatsReg;
-    estatsReg = (double **)malloc(sizeof(double *) * R);
+    float **estatsReg;
+    estatsReg = (float **)malloc(sizeof(float *) * R);
     for (int i = 0; i < R; i++)
-        estatsReg[i] = (double *)malloc(sizeof(double) * 3); // mediana, media, desvpad
+        estatsReg[i] = (float *)malloc(sizeof(float) * 3); // mediana, media, desvpad
 
-    // variaveis do país
+    // variaveis de País
     int menor = 101, maior = -1, melhorReg, melhorCid[2];
-    double mediana, media, desvpad, segs = 0.0;
+    float mediana, media, desvpad;
 
     // ========================================================================= //
-    clock_t begin = clock();
+    float begin = omp_get_wtime();
 
     // min, max e medianas
     for (int regiao = 0; regiao < R; regiao++)
@@ -87,8 +91,8 @@ int main(void)
             maior = maxReg[regiao];
     }
 
-    // medias, desvpads e melhores
-    double somaCid, somaReg;
+    // medias
+    float somaCid, somaReg, soma = 0;
     for (int regiao = 0; regiao < R; regiao++)
     {
         somaReg = 0;
@@ -100,36 +104,58 @@ int main(void)
                 somaCid += notas[regiao][cidade][aluno];
             }
             somaReg += somaCid;
-            estatsCid[regiao][cidade][1] = (double)(somaCid / A);
+            estatsCid[regiao][cidade][1] = (float)(somaCid / A);
         }
-        estatsReg[regiao][1] = (double)(somaReg / C);
+        estatsReg[regiao][1] = (float)(somaReg / (C * A));
+        soma += somaReg;
     }
+    media = (float)soma / (R * C * A);
+
+    // desvpads
+    float varCid = 0.0, varReg = 0.0, var = 0.0;
+    for (int regiao = 0; regiao < R; regiao++)
+    {
+        somaReg = 0;
+        for (int cidade = 0; cidade < C; cidade++)
+        {
+            somaCid = 0;
+            for (int aluno = 0; aluno < A; aluno++)
+            {
+                float v = estatsCid[regiao][cidade][1] - notas[regiao][cidade][aluno];
+                varCid += v * v;
+            }
+            varReg += varCid;
+            estatsCid[regiao][cidade][2] = sqrt(varCid / A);
+        }
+        estatsReg[regiao][2] = sqrt(varReg / (C * A));
+        var += varReg;
+    }
+    desvpad = sqrt(var / (R * C * A));
 
     // melhores
-    // double currCid = -1, currReg = -1;
-    // for (int regiao = 0; regiao < R; regiao++)
-    // {
-    //     for (int cidade = 0; cidade < C; cidade++)
-    //     {
-    //         if (estatsCid[regiao][cidade][1] > currCid)
-    //         {
-    //             currCid = estatsCid[regiao][cidade][1];
-    //             melhorCid[0] = regiao;
-    //             melhorCid[1] = cidade;
-    //         }
+    float currCid = -1, currReg = -1;
+    for (int regiao = 0; regiao < R; regiao++)
+    {
+        for (int cidade = 0; cidade < C; cidade++)
+        {
+            if (estatsCid[regiao][cidade][1] > currCid)
+            {
+                currCid = estatsCid[regiao][cidade][1];
+                melhorCid[0] = regiao;
+                melhorCid[1] = cidade;
+            }
 
-    //         currReg += currCid;
-    //         estatsCid[regiao][cidade][1] = (double)currCid / A;
-    //     }
-    //     if (estatsReg[regiao][1] > currCid)
-    //     {
-    //         currReg = estatsReg[regiao][1];
-    //         melhorReg = regiao;
-    //     }
-    // }
+            currReg += currCid;
+            estatsCid[regiao][cidade][1] = (float)currCid / A;
+        }
+        if (estatsReg[regiao][1] > currCid)
+        {
+            currReg = estatsReg[regiao][1];
+            melhorReg = regiao;
+        }
+    }
 
-    clock_t end = clock();
-    segs += (double)(end - begin) / CLOCKS_PER_SEC;
+    float end = omp_get_wtime();
     // ========================================================================= //
 
     // --------- Resultados --------- //
@@ -160,7 +186,7 @@ int main(void)
     printf("\n");
 
     // Tempo de Resposta
-    printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", segs);
+    printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", end - begin);
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)
@@ -212,4 +238,52 @@ int ***geradorDeNotas(int R, int C, int A, int seed)
         }
     }
     return notas;
+}
+
+void merge(int *X, int n, int *tmp)
+{
+    int i = 0;
+    int j = n / 2;
+    int ti = 0;
+
+    while (i < n / 2 && j < n)
+    {
+        if (X[i] < X[j])
+        {
+            tmp[ti] = X[i];
+            ti++;
+            i++;
+        }
+        else
+        {
+            tmp[ti] = X[j];
+            ti++;
+            j++;
+        }
+    }
+    while (i < n / 2)
+    {
+        tmp[ti] = X[i];
+        ti++;
+        i++;
+    }
+    while (j < n)
+    {
+        tmp[ti] = X[j];
+        ti++;
+        j++;
+    }
+    memcpy(X, tmp, n * sizeof(int));
+}
+
+void mergesort(int *X, int n, int *tmp)
+{
+    if (n < 2)
+        return;
+
+    mergesort(X, n / 2, tmp);
+
+    mergesort(X + (n / 2), n - (n / 2), tmp);
+
+    merge(X, n, tmp);
 }
