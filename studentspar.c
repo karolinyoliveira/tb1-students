@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h> 
+#include <omp.h> // Usado para padronizar a coleta do tempo de execução entre as implementações
 
 #define NOTA_MAXIMA 100
 #define N_NOTAS_CID A
 #define N_NOTAS_REG (C * A)
 #define N_NOTAS_BR (R * C * A)
 
-int ***geradorDeNotas(int R, int C, int A, int seed); // Refatorar: Poderia ser apenas um int[100] pra cada cidade, região e país
+int ***geradorDeNotas(int R, int C, int A, int seed);
 float Mediana(int *v, int tam);
 
 int main(void)
@@ -24,12 +24,12 @@ int main(void)
     // variáveis de cidade
     float ***estatsCid;
     estatsCid = (float ***)malloc(sizeof(float **) * R);
-    for (int i = 0; i < C; i++)
+    for (int i = 0; i < R; i++)
         estatsCid[i] = (float **)malloc(sizeof(float *) * C);
 
-    for (int i = 0; i < C; i++)
+    for (int i = 0; i < R; i++)
     {
-        for (int j = 0; j < A; j++)
+        for (int j = 0; j < C; j++)
             estatsCid[i][j] = (float *)malloc(sizeof(float) * 5); // min, max, mediana, media, desvpad
     }
 
@@ -133,12 +133,12 @@ int main(void)
                     somaCid += nota;
             }
             somaReg += somaCid;
-            estatsCid[regiao][cidade][3] = (float)somaCid / A;
+            estatsCid[regiao][cidade][3] = (float)somaCid / N_NOTAS_CID;
         }
-        estatsReg[regiao][3] = (float)somaReg / (C * A);
+        estatsReg[regiao][3] = (float)somaReg / N_NOTAS_REG;
         soma += somaReg;
     }
-    media = (float)soma / (R * C * A);
+    media = (float)soma / N_NOTAS_BR;
 
     // Desvpads
     float varCid = 0.0, varReg = 0.0, var = 0.0, difCid, difReg, dif;
@@ -181,7 +181,7 @@ int main(void)
             }
         }
 
-        if (estatsReg[regiao][3] > currCid)
+        if (estatsReg[regiao][3] < currCid)
         {
             currReg = estatsReg[regiao][3];
             melhorReg = regiao;
@@ -229,18 +229,17 @@ int main(void)
             free(notas[i][j]);
             free(estatsCid[i][j]);
         }
-    }
-
-    for (int i = 0; i < A; i++)
-    {
-        free(notas[i]);
-        free(estatsCid[i]);
         free(estatsReg[i]);
+        free(notasReg[i]);
+        free(estatsCid[i]);
+        free(notas[i]);
     }
 
     free(notas);
     free(estatsCid);
     free(estatsReg);
+    free(notasReg);
+
     return 0;
 }
 
@@ -249,12 +248,12 @@ int ***geradorDeNotas(int R, int C, int A, int seed)
     int i, j, k;
     int ***notas = (int ***)malloc(sizeof(int **) * R);
 
-    for (i = 0; i < C; i++)
+    for (i = 0; i < R; i++)
         notas[i] = (int **)malloc(sizeof(int *) * C);
 
-    for (i = 0; i < C; i++)
+    for (i = 0; i < R; i++)
     {
-        for (int j = 0; j < A; j++)
+        for (j = 0; j < C; j++)
             notas[i][j] = (int *)calloc(NOTA_MAXIMA + 1, sizeof(int)); // 101 notas possíveis
     }
 
@@ -264,11 +263,9 @@ int ***geradorDeNotas(int R, int C, int A, int seed)
         {
             for (k = 0; k < A; k++)
             {
-                int teste = rand() % 100;
+                int teste = rand() % 101;
                 notas[i][j][teste]++;
-                printf(" nota: %d ", teste);
             }
-            printf("\n");
         }
     }
     return notas;
@@ -290,7 +287,7 @@ float Mediana(int *v, int tam)
             else
             {
                 int j;
-                for (j = i+1; j <= NOTA_MAXIMA; j++)
+                for (j = i + 1; j <= NOTA_MAXIMA; j++)
                 {
                     if (v[j])
                         break;
