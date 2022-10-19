@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h> // Usado para padronizar a coleta do tempo de execução entre as implementações
+#include <omp.h> 
 
 #define NOTA_MAXIMA 100
 #define N_NOTAS_CID A
 #define N_NOTAS_REG (C * A)
 #define N_NOTAS_BR (R * C * A)
 
-int ***geradorDeNotas(int R, int C, int A, int seed);
+int ***geradorDeNotas(int R, int C, int A, int seed); // Refatorar: Poderia ser apenas um int[100] pra cada cidade, região e país
 float Mediana(int *v, int tam);
 
 int main(void)
