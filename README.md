@@ -131,20 +131,20 @@ id13{{...}} --> id40((min))
 id5{{...}} --> id40((min))
 id5{{...}} --> id41((min))
 id14{{...}} --> id41((min))
-id39{{min}} --> id45((min))
-id40{{min}} --> id45((min))
-id40{{min}} --> id46((min))
-id41{{min}} --> id46((min))
-id45{{min}} --> id47((min)) %% ...
-id46{{min}} --> id47((min)) %% Redução da região R
+id39((min)) --> id45((min))
+id40((min)) --> id45((min))
+id40((min)) --> id46((min))
+id41((min)) --> id46((min))
+id45((min)) --> id47((min)) %% ...
+id46((min)) --> id47((min)) %% Redução da região R
 
 %% Redução do país
 id35((min)) --> id48((min))
 id44((min)) --> id48((min))
 id44((min)) --> id49((min))
 id47((min)) --> id49((min))
-id48{{min}} --> id50((min)) %% ...
-id49{{min}} --> id50((min)) %% Redução do país
+id48((min)) --> id50((min)) %% ...
+id49((min)) --> id50((min)) %% Redução do país
 ```
 
 
