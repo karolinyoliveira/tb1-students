@@ -1,6 +1,6 @@
 # Introdução
 
-O problema em análise consiste em um vetor tridimensional, em que suas três dimensões representam, respectivamente, a região do país, a cidade da região e o estudante dessa cidade. Assim sendo, foram solicitados os seguintes itens referentes a esses dados: os valores mínimo, máximo e médio, além da mediana e do desvio padrão, em que cada um deles pode ser calculado para uma cidade, para uma região e, finalmente, para todo o país -- neste caso tratando todos os dados conjuntamente. Logo, considerando-se o requisito de projeto de paralelização do problema, foram implementadas duas variantes para sua resolução -- sendo uma delas sequencial e, a outra, paralela por meio do uso da API OpenMP para a linguagem de programação C; os tempos de resposta de ambas as versões serão utilizadas posteriormente para cômputo de ganhos de eficiência da paralelização sobre a execução sequencial.
+O problema em análise consiste em um vetor tridimensional, em que suas três dimensões representam, respectivamente, a região do país, a cidade da região e a nota do estudante dessa cidade. Assim sendo, foram solicitados os seguintes itens referentes a esses dados: os valores mínimo, máximo e médio, além da mediana e do desvio padrão, em que cada um deles pode ser calculado para uma cidade, para uma região e, finalmente, para todo o país -- neste caso tratando todos os dados conjuntamente. Logo, considerando-se o requisito de projeto de paralelização do problema, foram implementadas duas variantes para sua resolução -- sendo uma delas sequencial e, a outra, paralela por meio do uso da API OpenMP para a linguagem de programação C; os tempos de resposta de ambas as versões serão utilizadas posteriormente para cômputo de ganhos de eficiência da paralelização sobre a execução sequencial.
 
 # Análise PCAM
 
@@ -139,21 +139,21 @@ id13{{...}} --> id39((min))
 id13{{...}} --> id40((min))
 id5{{...}} --> id40((min))
 id5{{...}} --> id41((min))
-id14{{...}} --> id41((min))
-id39{{...}} --> id45((min))
-id40{{...}} --> id45((min))
-id40{{...}} --> id46((min))
-id41{{...}} --> id46((min))
-id45{{...}} --> id47((min)) %% ...
-id46{{...}} --> id47((min)) %% Redução da região R
+id14((min)) --> id41((min))
+id39((min)) --> id45((min))
+id40((min)) --> id45((min))
+id40((min)) --> id46((min))
+id41((min)) --> id46((min))
+id45((min)) --> id47((min)) %% ...
+id46((min)) --> id47((min)) %% Redução da região R
 
 %% Redução do país
 id35((min)) --> id48((min))
 id44((min)) --> id48((min))
 id44((min)) --> id49((min))
 id47((min)) --> id49((min))
-id48{{...}} --> id50((min)) %% ...
-id49{{...}} --> id50((min)) %% Redução do país
+id48((min)) --> id50((min)) %% ...
+id49((min)) --> id50((min)) %% Redução do país
 ```
 ### Comunicação
 Para a Comunicação neste problema, o fluxo de dados segue o grafo de dependências das tarefas. Os dados obtidos pela tarefa inicial são transmitidos às tarefas de obtenção de mínimos por região, cada qual transmite seus dados para as respectivas tarefas de obtenção de mínimos por cidade que, por sua vez, transmitem os dados para as tarefas atômicas de obtenção de mínimos por estudante -- as quais retornam a nota dele em si. A partir daí, a comunicação ocorre em pares em níveis equivalentes da árvore, até que se obtenha o mínimo buscado -- seja ele por cidade, por região ou por país, bastando tomar o subgrafo correspondente para cômputo.
