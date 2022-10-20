@@ -1,7 +1,16 @@
-# tb1-students
-Project developed for High-Performance Computing classes
+# Introdução
 
-## Minimização:
+O problema em análise consiste em um vetor tridimensional, em que suas três dimensões representam, respectivamente, a região do país, a cidade da região e o estudante dessa cidade. Assim sendo, foram solicitados os seguintes itens referentes a esses dados: os valores mínimo, máximo e médio, além da mediana e do desvio padrão, em que cada um deles pode ser calculado para uma cidade, para uma região e, finalmente, para todo o país -- neste caso tratando todos os dados conjuntamente. Logo, considerando-se o requisito de projeto de paralelização do problema, foram implementadas duas variantes para sua resolução -- sendo uma delas sequencial e, a outra, paralela por meio do uso da API OpenMP para a linguagem de programação C; os tempos de resposta de ambas as versões serão utilizadas posteriormente para cômputo de ganhos de eficiência da paralelização sobre a execução sequencial.
+
+# Análise PCAM
+
+A fim de se propor um projeto de paralelização, a análise PCAM será utilizada -- sendo ela referente às técnicas de Particionamento, Comunicação, Aglomeração e Mapeamento. Desse modo, uma análise será feita individualmente para cada um dos requisitos apresentados, sendo que o Mapeamento considerará, em todo caso, a execução realizada em um *cluster* contendo XXX processadores homogêneos, além de que, na Aglomeração, como tal, será sempre considerado uma máquina MIMD com mémoria compartilhada. Portanto, o Mapeamento dividirá, de maneira estática, os aglomerados obtidos ao longo dos processadores do sistema computacional -- utilizando, para tanto, uma fila circular; essa configuração será constante ao longo dos tópicos e, dessa forma, será otimida nas seções seguintes.
+
+## Mínimo
+
+### Particionamento
+Para o Particionamento do problema do valor mínimo, considere o grafo abaixo e tome $h\in\{1,2,...,11\}$ como a altura corrente na árvore, em que paralelização a nível de tarefas pode ser realizado nas alturas intermediárias. Assim sendo, após a obtenção dos dados e a sua formatação em um vetor tridimensional, realiza-se particionamento por dados -- dividindo o problema em regiões, atribuindo cada uma delas a uma tarefa. Em seguida, faz-se particionamento por cidades para cada região e, para cada cidade, particiona-se em estudantes. Por fim, faz-se redução por minimização dois a dois, isto é, a cada par de estudantes, toma-se a menor nota dentre as duas tarefas, eventualmente tomando mínimos entre cidades e entre regiões. Logo, em $h=7$, produz-se  o valor mínimo da cidade; em $h=9$, o da região; em $h=11$, o do país.
+
 ```mermaid
 %% Paralelização do problema de minimização
 
@@ -131,20 +140,27 @@ id13{{...}} --> id40((min))
 id5{{...}} --> id40((min))
 id5{{...}} --> id41((min))
 id14{{...}} --> id41((min))
-id39((min)) --> id45((min))
-id40((min)) --> id45((min))
-id40((min)) --> id46((min))
-id41((min)) --> id46((min))
-id45((min)) --> id47((min)) %% ...
-id46((min)) --> id47((min)) %% Redução da região R
+id39{{...}} --> id45((min))
+id40{{...}} --> id45((min))
+id40{{...}} --> id46((min))
+id41{{...}} --> id46((min))
+id45{{...}} --> id47((min)) %% ...
+id46{{...}} --> id47((min)) %% Redução da região R
 
 %% Redução do país
 id35((min)) --> id48((min))
 id44((min)) --> id48((min))
 id44((min)) --> id49((min))
 id47((min)) --> id49((min))
-id48((min)) --> id50((min)) %% ...
-id49((min)) --> id50((min)) %% Redução do país
+id48{{...}} --> id50((min)) %% ...
+id49{{...}} --> id50((min)) %% Redução do país
 ```
+### Comunicação
+Para a Comunicação neste problema, o fluxo de dados segue o grafo de dependências das tarefas. Os dados obtidos pela tarefa inicial são transmitidos às tarefas de obtenção de mínimos por região, cada qual transmite seus dados para as respectivas tarefas de obtenção de mínimos por cidade que, por sua vez, transmitem os dados para as tarefas atômicas de obtenção de mínimos por estudante -- as quais retornam a nota dele em si. A partir daí, a comunicação ocorre em pares em níveis equivalentes da árvore, até que se obtenha o mínimo buscado -- seja ele por cidade, por região ou por país, bastando tomar o subgrafo correspondente para cômputo.
 
+### Aglomeração
+Em geral, são criados tantos processos quantos elementos de processamento disponíveis no sistema computacional em questão. Todavia, a tarefa inicial é atribuída a único processo -- tal como a tarefa final, que retornará o mínimo buscado. Daí, caso seja buscado o mínimo da cidade, da região ou do país, respectivamente, será criado um *pool* de tarefas para cada par de estudante, cada cidade ou cada região -- o qual será consumido pelos processos criados anteriormente. Em geral, não haverá regiões críticas entre processos.
 
+## Máximo
+
+A análise PCAM, para a obtenção de máximos locais ou globais, é inteiramente semelhante àquela feita para o valor mínimo, sendo a única diferença a substituição da redução de minimização por uma redução de maximização -- isto é, a cada par de tarefas, recuperar sempre o maior valor armazenado entre as duas.
