@@ -343,23 +343,23 @@ id1[(read_data)] --> id0(get_city_mean)
 id1[(read_data)] --> idA(select_city_data)
 
 %% Alunos :: região 1 :: cidade 1
-id0(get_city_mean) --> id52("pow(student_111 - city_mean, 2)")
-id0(get_city_mean) --> id53("pow(student_112 - city_mean, 2)")
+id0(get_city_mean) --> id52("pow(student_1 - city_mean, 2)")
+id0(get_city_mean) --> id53("pow(student_2 - city_mean, 2)")
 id0(get_city_mean) --> id6{{...}}
-id0(get_city_mean) --> id54("pow(student_11A - city_mean, 2)")
+id0(get_city_mean) --> id54("pow(student_A - city_mean, 2)")
 
-idA(select_city_data) --> id52("pow(student_111 - city_mean, 2)")
-idA(select_city_data) --> id53("pow(student_112 - city_mean, 2)")
+idA(select_city_data) --> id52("pow(student_1 - city_mean, 2)")
+idA(select_city_data) --> id53("pow(student_2 - city_mean, 2)")
 idA(select_city_data) --> id6{{...}}
-idA(select_city_data) --> id54("pow(student_11A - city_mean, 2)")
+idA(select_city_data) --> id54("pow(student_A - city_mean, 2)")
 
 %% Redução :: região 1 :: cidade 1
-id52("pow(student_111 - city_mean, 2)") --> id15((sum))
-id53("pow(student_112 - city_mean, 2)") --> id15((sum))
-id53("pow(student_112 - city_mean, 2)") --> id16((sum))
+id52("pow(student_1 - city_mean, 2)") --> id15((sum))
+id53("pow(student_2 - city_mean, 2)") --> id15((sum))
+id53("pow(student_2 - city_mean, 2)") --> id16((sum))
 id6{{...}} --> id16((sum))
 id6{{...}} --> id17((sum))
-id54("pow(student_11A - city_mean, 2)") --> id17((sum))
+id54("pow(student_A - city_mean, 2)") --> id17((sum))
 id15((sum)) --> id24((sum))
 id16((sum)) --> id24((sum))
 id16((sum)) --> id25((sum))
@@ -395,30 +395,30 @@ idA(select_region_data) --> id3{{...}}
 idA(select_region_data) --> city_1C
 
 %% Alunos :: região 1 :: cidade 1
-city_11 --> id52("pow(student_111 - region_mean, 2)")
-city_11 --> id53("pow(student_112 - region_mean, 2)")
+city_11 --> id52("pow(student_11 - region_mean, 2)")
+city_11 --> id53("pow(student_12 - region_mean, 2)")
 city_11 --> id6{{...}}
-city_11 --> id54("pow(student_11A - region_mean, 2)")
+city_11 --> id54("pow(student_1A - region_mean, 2)")
 
 %% Alunos :: região 1 :: cidade 2
-city_12 --> id55("pow(student_121 - region_mean, 2)")
-city_12 --> id56("pow(student_122 - region_mean, 2)")
+city_12 --> id55("pow(student_21 - region_mean, 2)")
+city_12 --> id56("pow(student_22 - region_mean, 2)")
 city_12 --> id7{{...}}
-city_12 --> id57("pow(student_12A - region_mean, 2)")
+city_12 --> id57("pow(student_2A - region_mean, 2)")
 
 %% Alunos :: região 1 :: cidade C
-city_1C --> id58("pow(student_1C1 - region_mean, 2)")
-city_1C --> id59("pow(student_1C2 - region_mean, 2)")
+city_1C --> id58("pow(student_C1 - region_mean, 2)")
+city_1C --> id59("pow(student_C2 - region_mean, 2)")
 city_1C --> id8{{...}}
-city_1C --> id60("pow(student_1CA - region_mean, 2)")
+city_1C --> id60("pow(student_CA - region_mean, 2)")
 
 %% Redução :: região 1 :: cidade 1
-id52("pow(student_111 - region_mean, 2)") --> id15((sum))
-id53("pow(student_112 - region_mean, 2)") --> id15((sum))
-id53("pow(student_112 - region_mean, 2)") --> id16((sum))
+id52("pow(student_11 - region_mean, 2)") --> id15((sum))
+id53("pow(student_12 - region_mean, 2)") --> id15((sum))
+id53("pow(student_12 - region_mean, 2)") --> id16((sum))
 id6{{...}} --> id16((sum))
 id6{{...}} --> id17((sum))
-id54("pow(student_11A - region_mean, 2)") --> id17((sum))
+id54("pow(student_1A - region_mean, 2)") --> id17((sum))
 id15((sum)) --> id24((sum))
 id16((sum)) --> id24((sum))
 id16((sum)) --> id25((sum))
@@ -427,12 +427,12 @@ id24((sum)) --> id26((sum)) %% ...
 id25((sum)) --> id26((sum)) %% Redução da cidade 1
 
 %% Redução :: região 1 :: cidade 2
-id55("pow(student_121 - region_mean, 2)") --> id18((sum))
-id56("pow(student_122 - region_mean, 2)") --> id18((sum))
-id56("pow(student_122 - region_mean, 2)") --> id19((sum))
+id55("pow(student_21 - region_mean, 2)") --> id18((sum))
+id56("pow(student_22 - region_mean, 2)") --> id18((sum))
+id56("pow(student_22 - region_mean, 2)") --> id19((sum))
 id7{{...}} --> id19((sum))
 id7{{...}} --> id20((sum))
-id57("pow(student_12A - region_mean, 2)") --> id20((sum))
+id57("pow(student_2A - region_mean, 2)") --> id20((sum))
 id18((sum)) --> id27((sum))
 id19((sum)) --> id27((sum))
 id19((sum)) --> id28((sum))
@@ -441,12 +441,12 @@ id27((sum)) --> id29((sum)) %% ...
 id28((sum)) --> id29((sum)) %% Redução da cidade 2
 
 %% Redução :: região 1 :: cidade C
-id58("pow(student_1C1 - region_mean, 2)") --> id21((sum))
-id59("pow(student_1C2 - region_mean, 2)") --> id21((sum))
-id59("pow(student_1C2 - region_mean, 2)") --> id22((sum))
+id58("pow(student_C1 - region_mean, 2)") --> id21((sum))
+id59("pow(student_C2 - region_mean, 2)") --> id21((sum))
+id59("pow(student_C2 - region_mean, 2)") --> id22((sum))
 id8{{...}} --> id22((sum))
 id8{{...}} --> id23((sum))
-id60("pow(student_1CA - region_mean, 2)") --> id23((sum))
+id60("pow(student_CA - region_mean, 2)") --> id23((sum))
 id21((sum)) --> id30((sum))
 id22((sum)) --> id30((sum))
 id22((sum)) --> id31((sum))
