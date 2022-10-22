@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h> // Usado para padronizar a coleta do tempo de execução entre as implementações
+#include <omp.h> 
 
 #define NOTA_MAXIMA 100
 #define N_NOTAS_CID A
@@ -19,6 +19,8 @@ int main(void)
     srand(seed);
 
     int ***notas = geradorDeNotas(R, C, A, seed);
+
+    omp_set_num_threads(omp_get_max_threads());
 
     // --------- Cálculos --------- //
     // variáveis de cidade
@@ -51,7 +53,8 @@ int main(void)
     // ========================================================================= //
     float begin = omp_get_wtime();
 
-    // Min, Max
+// Min, Max
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
         estatsReg[regiao][0] = 101, estatsReg[regiao][1] = -1;
@@ -88,11 +91,14 @@ int main(void)
             maior = estatsReg[regiao][1];
     }
 
-    // Merge das Notas
+// Merge das Notas
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
+
         for (int cidade = 0; cidade < C; cidade++)
         {
+#pragma omp simd
             for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
             {
                 notasReg[regiao][nota] += notas[regiao][cidade][nota];
@@ -100,8 +106,10 @@ int main(void)
         }
     }
 
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
+#pragma omp simd
         for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
         {
             notasBrasil[nota] += notasReg[regiao][nota];
@@ -110,6 +118,8 @@ int main(void)
 
     // Medianas
     mediana = Mediana(notasBrasil, N_NOTAS_BR);
+
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
         for (int cidade = 0; cidade < C; cidade++)
@@ -121,6 +131,9 @@ int main(void)
 
     // Medias
     long int somaCid, somaReg, soma = 0;
+
+#pragma omp parallel for shared(soma) reduction(+ \
+                                   : soma)
     for (int regiao = 0; regiao < R; regiao++)
     {
         somaReg = 0;
@@ -138,10 +151,13 @@ int main(void)
         estatsReg[regiao][3] = (float)somaReg / N_NOTAS_REG;
         soma += somaReg;
     }
+
     media = (float)soma / N_NOTAS_BR;
 
     // Desvpads
     float varCid = 0.0, varReg = 0.0, var = 0.0, difCid, difReg, dif;
+
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
         varReg = 0.0;
@@ -169,6 +185,8 @@ int main(void)
 
     // Melhores
     float currCid = -1, currReg = -1;
+
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
         for (int cidade = 0; cidade < C; cidade++)
@@ -202,7 +220,7 @@ int main(void)
         printf("\n");
     }
 
-    // Por Região
+    // // Por Região
     for (int regiao = 0; regiao < R; regiao++)
     {
         printf("Reg %d: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", regiao, (int)estatsReg[regiao][0], (int)estatsReg[regiao][1], estatsReg[regiao][2], estatsReg[regiao][3], estatsReg[regiao][4]);
@@ -213,13 +231,14 @@ int main(void)
     printf("Brasil: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", menor, maior, mediana, media, desvpad);
     printf("\n");
 
-    // Melhor Região e cidade
+    // // Melhor Região e cidade
     printf("Melhor região: Região %d\n", melhorReg);
     printf("Melhor cidade: Região %d, Cidade %d\n", melhorCid[0], melhorCid[1]);
     printf("\n");
 
     // Tempo de Resposta
     printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", end - begin);
+    printf("%d\n", omp_get_max_threads());
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)
@@ -274,7 +293,6 @@ int ***geradorDeNotas(int R, int C, int A, int seed)
 float Mediana(int *v, int tam)
 {
     int contador = 0;
-
     for (int i = 0; i <= NOTA_MAXIMA; i++)
     {
         contador += v[i];
@@ -287,6 +305,7 @@ float Mediana(int *v, int tam)
             else
             {
                 int j;
+
                 for (j = i + 1; j <= NOTA_MAXIMA; j++)
                 {
                     if (v[j])
