@@ -6,7 +6,6 @@ CFLAGS = -Wall -Wextra
 SEQ_BIN = seq
 PAR_BIN = par
 ZIP = parallel.zip
-OBJ = obj/studentsseq.o obj/studentspar_2.o
 
 # ------------------- # --- DIRETIVAS PRINCIPAIS --- # -------------------- #
 
@@ -14,22 +13,16 @@ OBJ = obj/studentsseq.o obj/studentspar_2.o
 all: $(SEQ_BIN) $(PAR_BIN)
 
 # Produção do executável
-$(SEQ_BIN): $(OBJ)
-	$(CC) $(OBJ) -o $(SEQ_BIN)
-$(PAR_BIN): $(OBJ)
-	$(CC) $(OBJ) -fopenmp -ofast $(PAR_BIN)
+$(SEQ_BIN): obj/studentsseq.o
+	$(CC) obj/studentsseq.o -o $(SEQ_BIN)
+$(PAR_BIN): obj/studentspar_2.o
+	$(CC) obj/studentspar_2.o -fopenmp -o $(PAR_BIN)
 
 # Execução convencional do programa
-run-seq:
+runseq: $(SEQ_BIN)
 	./$(SEQ_BIN)
-run-par:
+runpar: $(PAR_BIN)
 	./$(PAR_BIN)
-
-# Execução do programa com Valgrind
-valgrind-seq:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(SEQ_BIN)
-valgrind-seq:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(PAR_BIN)
 
 # Compressão dos arquivos
 zip: clean
@@ -41,8 +34,8 @@ clean:
 
 # ----------------------- # --- OBJETIFICAÇÃO --- # ------------------------ #
 
-obj/studentsseq.o: src/studentseq.c
-	$(CC) -c src/studentsseq.c -o obj/studentsseq.o $(CFLAGS)	
+obj/studentsseq.o:
+	$(CC) -c ./studentsseq.c -o obj/studentsseq.o $(CFLAGS)	
 
-obj/studentspar_2.o: src/studentspar_2.c
-	$(CC) -c src/studentspar_2.c -fopenmp -ofast obj/studentspar_2.o $(CFLAGS)
+obj/studentspar_2.o:
+	$(CC) -c ./studentspar_2.c -fopenmp -o obj/studentspar_2.o $(CFLAGS)
