@@ -267,6 +267,75 @@ void print_city_max_grade(int ***grades, int region, int city, int A){
 }
 
 
+// Obtém a nota média do país
+int get_country_mean_grade(int ***grades, int R, int C, int A) {
+    int sum = 0;
+    int r, c, a;
+    #pragma omp parallel for reduction(+:sum)
+    for(r=0; r<R; ++r){
+        for(c=0; c<C; ++c){
+            for(a=0; a<A; ++a){
+                sum += grades[r][c][a];
+            }
+        }
+    }
+    return sum / (R*C*A);
+}
+
+
+// Obtém a nota média da região
+int get_region_mean_grade(int **region, int C, int A) {
+    int sum = 0;
+    int c, a;
+    #pragma omp parallel for reduction(+:sum)
+    for(c=0; c<C; ++c){
+        for(a=0; a<A; ++a){
+            sum += region[c][a];
+        }
+    }
+    return sum / (C*A);
+}
+
+
+// Obtém a nota média da cidade
+int get_city_mean_grade(int *city, int A) {
+    int sum = 0;
+    int a;
+    #pragma omp parallel for reduction(+:sum)
+    for(a=0; a<A; ++a){
+        sum += city[a];
+    }
+    return sum / A;
+}
+
+
+// Calcula o tempo de execução da média do país e o imprime
+void print_country_mean_grade(int ***grades, int R, int C, int A){
+    double start = omp_get_wtime();
+    int mean = get_country_mean_grade(grades, R, C, A);
+    double end = omp_get_wtime();
+    printf("country mean grade: %d. Time elapsed: %lf.\n", mean, end-start);
+}
+
+
+// Calcula o tempo de execução da média da região e o imprime
+void print_region_mean_grade(int ***grades, int region, int C, int A){
+    double start = omp_get_wtime();
+    int mean = get_region_mean_grade(grades[region], C, A);
+    double end = omp_get_wtime();
+    printf("region %d mean grade: %d. Time elapsed: %lf.\n", region, mean, end-start);
+}
+
+
+// Calcula o tempo de execução da média da cidade e o imprime
+void print_city_mean_grade(int ***grades, int region, int city, int A){
+    double start = omp_get_wtime();
+    int mean = get_city_mean_grade(grades[region][city], A);
+    double end = omp_get_wtime();
+    printf("region %d, city %d mean grade: %d. Time elapsed: %lf.\n", region, city, mean, end-start);
+}
+
+
 int main(void) {
 
     // Definição do número de threads
@@ -293,6 +362,12 @@ int main(void) {
     print_country_max_grade(grades, R, C, A);
     print_region_max_grade(grades, 0, C, A);
     print_city_max_grade(grades, 0, 0, A);
+    printf("\n");
+
+    // Médias
+    print_country_mean_grade(grades, R, C, A);
+    print_region_mean_grade(grades, 0, C, A);
+    print_city_mean_grade(grades, 0, 0, A);
     printf("\n");
 
     // Finalização
