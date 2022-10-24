@@ -8,7 +8,7 @@
 #define MAX_GRADE 100
 
 // Número de vezes que executa um algoritmo para tomar a média de tempo
-#define NUM_ATTEMPTS 32
+#define NUM_ATTEMPTS 2
 
 // Para ativar as threads aninhadas do mergesort
 #define OMP_NESTED TRUE
@@ -82,77 +82,116 @@ double get_mean(double *array, int len){
 }
 
 
+// Retorna um vetor inicializado com o valor fornecido, que é replicado
+int *start_array(int len, int value) {
+    int *array = (int *) malloc(len * sizeof(int));
+    int i;
+    for(i=0; i<len; ++i)
+        array[i] = value;
+    return array;
+}
+
+
+// Retorna o mínimo de um arranjo de inteiros
+int get_min(int *array, int len) {
+    int i, min = INT_MAX;
+    for(i=0; i<len; ++i)
+        if(array[i] < min)
+            min = array[i];
+    return min;
+}
+
+
+// Retorna o máximo de um arranjo de inteiros
+int get_max(int *array, int len) {
+    int i, max = INT_MAX;
+    for(i=0; i<len; ++i)
+        if(array[i] < max)
+            max = array[i];
+    return max;
+}
+
+
 // Retorna a nota mínima do país
 int get_country_min_grade(int ***grades, int R, int C, int A){
-    int i, j, k, result = INT_MAX;
-    #pragma omp parallel
+
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MAX);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MAX;
-        #pragma omp for
-        for(i=0; i<R; ++i){
-            for(j=0; j<C; ++j){
-                for(k=0; k<A; ++k){
-                    if(grades[i][j][k] < local_result){
-                        local_result = grades[i][j][k];
-                        #pragma omp critical
-                        {
-                            if(local_result < result){
-                                result = local_result;
-                            }
-                        }
+        int r, c, a, thread_num = omp_get_thread_num();
+        #pragma omp for private(r,c,a)
+        for(r=0; r<R; ++r){
+            for(c=0; c<C; ++c){
+                for(a=0; a<A; ++a){
+                    if(grades[r][c][a] < results[thread_num]){
+                        results[thread_num] = grades[r][c][a];
                     }
                 }
             }
         }
     }
+
+    // Minimização
+    int result = get_min(results, num_threads);
+    free(results);
     return result;
 }
 
 
 // Retorna a nota mínima da região
 int get_region_min_grade(int **region, int C, int A){
-    int i, j, result = INT_MAX;
-    #pragma omp parallel
+
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MAX);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MAX;
-        #pragma omp for
-        for(i=0; i<C; ++i){
-            for(j=0; j<A; ++j){
-                if(region[i][j] < local_result){
-                    local_result = region[i][j];
-                    #pragma omp critical
-                    {
-                        if(local_result < result){
-                            result = local_result;
-                        }
-                    }
+        int c, a, thread_num = omp_get_thread_num();
+        #pragma omp for private(c,a)
+        for(c=0; c<C; ++c){
+            for(a=0; a<A; ++a){
+                if(region[c][a] < results[thread_num]){
+                    results[thread_num] = region[c][a];
                 }
             }
         }
     }
+
+    // Minimização
+    int result = get_min(results, num_threads);
+    free(results);
     return result;
 }
 
 
 // Retorna a nota mínima da cidade
 int get_city_min_grade(int *city, int A){
-    int i, result = INT_MAX;
-    #pragma omp parallel
+
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MAX);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MAX;
-        #pragma omp for
-        for(i=0; i<A; ++i){
-            if(city[i] < local_result){
-                local_result = city[i];
-                #pragma omp critical
-                {
-                    if(local_result < result){
-                        result = local_result;
-                    }
-                }
+        int a, thread_num = omp_get_thread_num();
+        #pragma omp for private(a)
+        for(a=0; a<A; ++a){
+            if(city[a] < results[thread_num]){
+                results[thread_num] = city[a];
             }
         }
     }
+
+    // Minimização
+    int result = get_min(results, num_threads);
+    free(results);
     return result;
 }
 
@@ -203,75 +242,84 @@ void print_city_min_grade(int ***grades, int region, int city, int A){
 
 // Retorna a nota máxima do país
 int get_country_max_grade(int ***grades, int R, int C, int A){
-    int i, j, k, result = INT_MIN;
-    #pragma omp parallel
+
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MIN);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MIN;
-        #pragma omp for
-        for(i=0; i<R; ++i){
-            for(j=0; j<C; ++j){
-                for(k=0; k<A; ++k){
-                    if(grades[i][j][k] > local_result){
-                        local_result = grades[i][j][k];
-                        #pragma omp critical
-                        {
-                            if(local_result > result){
-                                result = local_result;
-                            }
-                        }
+        int r, c, a, thread_num = omp_get_thread_num();
+        #pragma omp for private(r,c,a)
+        for(r=0; r<R; ++r){
+            for(c=0; c<C; ++c){
+                for(a=0; a<A; ++a){
+                    if(grades[r][c][a] > results[thread_num]){
+                        results[thread_num] = grades[r][c][a];
                     }
                 }
             }
         }
     }
+
+    // Maximização
+    int result = get_max(results, num_threads);
+    free(results);
     return result;
 }
 
 
 // Retorna a nota máxima da região
 int get_region_max_grade(int **region, int C, int A){
-    int i, j, result = INT_MIN;
-    #pragma omp parallel
+    
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MIN);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MIN;
-        #pragma omp for
-        for(i=0; i<C; ++i){
-            for(j=0; j<A; ++j){
-                if(region[i][j] > local_result){
-                    local_result = region[i][j];
-                    #pragma omp critical
-                    {
-                        if(local_result > result){
-                            result = local_result;
-                        }
-                    }
+        int c, a, thread_num = omp_get_thread_num();
+        #pragma omp for private(c,a)
+        for(c=0; c<C; ++c){
+            for(a=0; a<A; ++a){
+                if(region[c][a] > results[thread_num]){
+                    results[thread_num] = region[c][a];
                 }
             }
         }
     }
+
+    // Maximização
+    int result = get_max(results, num_threads);
+    free(results);
     return result;
 }
 
 
 // Retorna a nota máxima da cidade
 int get_city_max_grade(int *city, int A){
-    int i, result = INT_MIN;
-    #pragma omp parallel
+    
+    // Vetor de resultados temporários
+    int num_threads = omp_get_max_threads();
+    int *results = start_array(num_threads, INT_MIN);
+
+    // Região de paralelização de busca
+    #pragma omp parallel num_threads(num_threads)
     {
-        int local_result = INT_MIN;
-        #pragma omp for
-        for(i=0; i<A; ++i){
-            if(city[i] > local_result){
-                local_result = city[i];
-                #pragma omp critical
-                {
-                    if(local_result > result){
-                        result = local_result;
-                    }
-                }
+        int a, thread_num = omp_get_thread_num();
+        #pragma omp for private(a)
+        for(a=0; a<A; ++a){
+            if(city[a] > results[thread_num]){
+                results[thread_num] = city[a];
             }
         }
     }
+
+    // Maximização
+    int result = get_max(results, num_threads);
+    free(results);
     return result;
 }
 
@@ -325,7 +373,7 @@ void print_city_max_grade(int ***grades, int region, int city, int A){
 int get_country_mean_grade(int ***grades, int R, int C, int A) {
     int sum = 0;
     int r, c, a;
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) private(r,c,a)
     for(r=0; r<R; ++r){
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
@@ -341,7 +389,7 @@ int get_country_mean_grade(int ***grades, int R, int C, int A) {
 int get_region_mean_grade(int **region, int C, int A) {
     int sum = 0;
     int c, a;
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) private(c,a)
     for(c=0; c<C; ++c){
         for(a=0; a<A; ++a){
             sum += region[c][a];
@@ -355,7 +403,7 @@ int get_region_mean_grade(int **region, int C, int A) {
 int get_city_mean_grade(int *city, int A) {
     int sum = 0;
     int a;
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) private(a)
     for(a=0; a<A; ++a){
         sum += city[a];
     }
@@ -413,7 +461,7 @@ int get_country_grades_std_deviation(int ***grades, int R, int C, int A) {
     int sum = 0;
     int r, c, a;
     int mean = get_country_mean_grade(grades, R, C, A);
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) shared(mean) private(r,c,a)
     for(r=0; r<R; ++r){
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
@@ -430,7 +478,7 @@ int get_region_grades_std_deviation(int **region, int C, int A) {
     int sum = 0;
     int c, a;
     int mean = get_region_mean_grade(region, C, A);
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) shared(mean) private(c,a)
     for(c=0; c<C; ++c){
         for(a=0; a<A; ++a){
             sum += pow((region[c][a] - mean), 2.0);
@@ -445,7 +493,7 @@ int get_city_grades_std_deviation(int *city, int A) {
     int sum = 0;
     int a;
     int mean = get_city_mean_grade(city, A);
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) shared(mean) private(a)
     for(a=0; a<A; ++a){
         sum += pow((city[a] - mean), 2.0);
     }
@@ -698,9 +746,6 @@ void print_city_median_grade(int ***grades, int region, int city, int A){
 
 
 int main(void) {
-
-    // Definição do número de threads
-    omp_set_num_threads(omp_get_max_threads());
 
     // Variáveis locais
     int R, C, A, seed;
