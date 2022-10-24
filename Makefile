@@ -28,6 +28,10 @@ runpar: $(PAR_BIN)
 zip: clean
 	zip -r $(ZIP) Makefile lib/* src/* obj/
 
+# Execução do programa paralelo com Valgrind
+valgrind: $(PAR_BIN)
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(PAR_BIN)
+
 # Limpeza de objetos e de executável
 clean:
 	$(RM) $(SEQ_BIN) $(PAR_BIN) $(ZIP) obj/*.o
