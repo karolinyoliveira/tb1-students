@@ -4,9 +4,14 @@
 #include <math.h>
 #include <omp.h> 
 
+// Nota máxima exclusiva
 #define MAX_GRADE 100
+
+// Número de vezes que executa um algoritmo para tomar a média de tempo
 #define NUM_ATTEMPTS 32
 
+// Para ativar as threads aninhadas do mergesort
+#define OMP_NESTED TRUE
 
 /// @brief Gera um vetor de notas.
 /// @param R Quantia de regiões.
