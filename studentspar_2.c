@@ -128,7 +128,7 @@ int get_min(int *array, int len) {
 
 // Retorna o máximo de um arranjo de inteiros
 int get_max(int *array, int len) {
-    int i, max = INT_MAX;
+    int i, max = INT_MIN;
     for(i=0; i<len; ++i)
         if(array[i] > max)
             max = array[i];
