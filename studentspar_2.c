@@ -63,10 +63,11 @@ void print_grades_to_numpy(int ***grades, int R, int C, int A) {
     for(i=0; i<R; ++i){
         printf("[");
         for(j=0; j<C; ++j){
+            printf("[");
             for(k=0; k<A-1; ++k){
                 printf("%d, ", grades[i][j][k]);
             }
-            printf("%d", grades[i][j][k]);
+            printf("%d],", grades[i][j][k]);
         }
         printf("],\n");
     }
