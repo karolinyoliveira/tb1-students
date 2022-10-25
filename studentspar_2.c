@@ -692,36 +692,36 @@ void mergeSort(int arr[], int l, int r)
 
 
 // Obtém a mediana de um arranjo
-int get_median(int *array, int len){
+float get_median(int *array, int len){
     mergeSort(array, 0, len-1);
     if(len % 2 != 0)
-        return array[len/2];
-    return (array[len/2] + array[len/2 - 1]) / 2;
+        return (float) array[len/2];
+    return (float) (array[len/2] + array[len/2 - 1]) / 2.0;
 }
 
 
 // Obtém a mediana do país
-int get_country_median_grade(int ***grades, int R, int C, int A){
+float get_country_median_grade(int ***grades, int R, int C, int A){
     int *flatten_grades = flatten_country_grades(grades, R, C, A);
-    int median = get_median(flatten_grades, R*C*A);
+    float median = get_median(flatten_grades, R*C*A);
     free(flatten_grades);
     return median;
 }
 
 
 // Obtém a mediana da região
-int get_region_median_grade(int **region, int C, int A){
+float get_region_median_grade(int **region, int C, int A){
     int *flatten_grades = flatten_region_grades(region, C, A);
-    int median = get_median(flatten_grades, C*A);
+    float median = get_median(flatten_grades, C*A);
     free(flatten_grades);
     return median;
 }
 
 
 // Obtém a mediana da cidade
-int get_city_median_grade(int *city, int A){
+float get_city_median_grade(int *city, int A){
     int *city_copy = copy_city(city, A);
-    int median = get_median(city_copy, A);
+    float median = get_median(city_copy, A);
     free(city_copy);
     return median;
 }
@@ -729,7 +729,8 @@ int get_city_median_grade(int *city, int A){
 
 // Calcula o tempo de execução da mediana do país e o imprime
 void print_country_median_grade(int ***grades, int R, int C, int A){
-    int i, median;
+    int i;
+    float median;
     double start, end;
     double times[NUM_ATTEMPTS];
     for(i=0; i<NUM_ATTEMPTS; ++i){
@@ -746,13 +747,14 @@ void print_country_median_grade(int ***grades, int R, int C, int A){
         // Liberação do vetor temporário
         free(flatten_grades);
     }
-    printf("country median grade: %d. Mean time elapsed: %lf.\n", median, get_mean(times, NUM_ATTEMPTS));
+    printf("country median grade: %.2f. Mean time elapsed: %lf.\n", median, get_mean(times, NUM_ATTEMPTS));
 }
 
 
 // Calcula o tempo de execução da mediana da região e o imprime
 void print_region_median_grade(int ***grades, int region, int C, int A){
-    int i, median;
+    int i;
+    float median;
     double start, end;
     double times[NUM_ATTEMPTS];
     for(i=0; i<NUM_ATTEMPTS; ++i){
@@ -769,13 +771,14 @@ void print_region_median_grade(int ***grades, int region, int C, int A){
         // Liberação do vetor temporário
         free(flatten_grades);
     }
-    printf("region %d median grade: %d. Mean time elapsed: %lf.\n", region, median, get_mean(times, NUM_ATTEMPTS));
+    printf("region %d median grade: %.2f. Mean time elapsed: %lf.\n", region, median, get_mean(times, NUM_ATTEMPTS));
 }
 
 
 // Calcula o tempo de execução da mediana da cidade e o imprime
 void print_city_median_grade(int ***grades, int region, int city, int A){
-    int i, median;
+    int i;
+    float median;
     double start, end;
     double times[NUM_ATTEMPTS];
     for(i=0; i<NUM_ATTEMPTS; ++i){
@@ -792,7 +795,7 @@ void print_city_median_grade(int ***grades, int region, int city, int A){
         // Liberação do vetor temporário
         free(flatten_grades);
     }
-    printf("region %d, city %d median grade: %d. Mean time elapsed: %lf.\n", region, city, median, get_mean(times, NUM_ATTEMPTS));
+    printf("region %d, city %d median grade: %.2f. Mean time elapsed: %lf.\n", region, city, median, get_mean(times, NUM_ATTEMPTS));
 }
 
 
@@ -859,8 +862,8 @@ int main(void) {
     int ***grades = NULL;
 
     // Valores de interesse
-    int min, max, median;
-    float mean, std;
+    int min, max;
+    float median, mean, std;
 
     // Otimização global
     int global_region_max = INT_MIN, global_region_argmax = 0;
@@ -887,7 +890,7 @@ int main(void) {
             mean = get_city_mean_grade(grades[region][city], A);
             std = get_city_grades_std_deviation(grades[region][city], A);
             printf (
-                "Reg %d - Cid %d: menor: %d, maior: %d, mediana: %d, média: %.2f e DP: %.2f\n", 
+                "Reg %d - Cid %d: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", 
                 region, city, min, max, median, mean, std
             );
             if(mean > global_city_max){
@@ -907,7 +910,7 @@ int main(void) {
         mean = get_region_mean_grade(grades[region], C, A);
         std = get_region_grades_std_deviation(grades[region], C, A);
         printf (
-            "Reg %d: menor: %d, maior: %d, mediana: %d, média: %.2f e DP: %.2f\n", 
+            "Reg %d: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", 
             region, min, max, median, mean, std
         );
         if(mean > global_region_max){
@@ -923,7 +926,7 @@ int main(void) {
     mean = get_country_mean_grade(grades, R, C, A);
     std = get_country_grades_std_deviation(grades, R, C, A);
     printf (
-        "\nBrasil: menor: %d, maior: %d, mediana: %d, média: %.2f e DP: %.2f\n\n", 
+        "\nBrasil: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n\n", 
         min, max, median, mean, std
     );
 
