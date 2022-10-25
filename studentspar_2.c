@@ -876,7 +876,7 @@ int main(void) {
 
     // Geração das notas
     grades = generate_grades(R, C, A, MAX_GRADE);
-    print_grades_to_numpy(grades, R, C, A);
+    print_grades(grades, R, C, A);
 
     // Dados das cidades
     for(region=0; region<R; ++region) {
