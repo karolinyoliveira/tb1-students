@@ -130,7 +130,7 @@ int get_min(int *array, int len) {
 int get_max(int *array, int len) {
     int i, max = INT_MAX;
     for(i=0; i<len; ++i)
-        if(array[i] < max)
+        if(array[i] > max)
             max = array[i];
     return max;
 }
