@@ -1,3 +1,18 @@
+<strong> Universidade de São Paulo - ICMC - BCC
+
+SSC0903 - Computação de Alto Desempenho (2022/2)
+
+Primeiro Trabalho Prático (TB1) - Resolução em Grupo
+
+Turma: A
+
+Número do Grupo: 01
+
+Nomes dos integrantes deste grupo que resolveram o trabalho: </strong>
+
+Karoliny Oliveira Ozias Silva
+
+<u><strong> Resposta para Q01: </strong></u>
 
 # Introdução
 
@@ -708,3 +723,5 @@ Para este problema, a comunicação segue o fluxo de dados do grafo de dependên
 ### Aglomeração
 
 Devem ser considerados tantos processos quanto unidades de processamento existentes no sistema computacional em uso. Assim sendo, as tarefas de mesclagem podem ser disponibilizadas em uma *pool*, sendo consumidas pelos processos conforme demanda de execução. Entretanto, o achatamento dos dados e a obtenção da mediana após ordenação dos dados devem ser, ambos, feitos por único processo.
+
+Resposta para Q03:
