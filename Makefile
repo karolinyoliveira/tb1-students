@@ -16,7 +16,7 @@ all: $(SEQ_BIN) $(PAR_BIN)
 $(SEQ_BIN): obj/studentsseq.o
 	$(CC) obj/studentsseq.o -fopenmp -o $(SEQ_BIN) -lm
 $(PAR_BIN): obj/studentspar_2.o
-	$(CC) obj/studentspar_2.o -fopenmp -o $(PAR_BIN) -lm
+	$(CC) -Ofast obj/studentspar_2.o -fopenmp -o $(PAR_BIN) -lm
 
 # Execução convencional do programa
 runseq: $(SEQ_BIN)
@@ -42,4 +42,4 @@ obj/studentsseq.o:
 	$(CC) -c ./studentsseq.c -o obj/studentsseq.o $(CFLAGS)
 
 obj/studentspar_2.o:
-	$(CC) -c ./studentspar_2.c -fopenmp -o obj/studentspar_2.o $(CFLAGS)
+	$(CC) -c -Ofast ./studentspar_2.c -fopenmp -o obj/studentspar_2.o $(CFLAGS)

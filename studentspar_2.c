@@ -28,7 +28,7 @@ int ***generate_grades(int R, int C, int A, int max_grade) {
         for(j=0; j<C; ++j){
             output[i][j] = (int *) malloc(A * sizeof(int));
             for(k=0; k<A; ++k){
-                output[i][j][k] = rand() % max_grade+1;
+                output[i][j][k] = rand() % max_grade + 1;
             }
         }
     }
@@ -59,9 +59,9 @@ void free_grades(int ***grades, int R, int C){
 /// @param A Quantia de alunos por cidade.
 void print_grades_to_numpy(int ***grades, int R, int C, int A) {
     int i, j, k;
-    printf("np.array([");
+    printf("np.array([\n");
     for(i=0; i<R; ++i){
-        printf("[");
+        printf("\t[");
         for(j=0; j<C; ++j){
             printf("[");
             for(k=0; k<A-1; ++k){
@@ -147,7 +147,7 @@ int get_country_min_grade(int ***grades, int R, int C, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int r, c, a, thread_num = omp_get_thread_num();
-        #pragma omp for private(r,c,a)
+        #pragma omp for simd private(r,c,a) collapse(3) aligned(grades:16) schedule(simd:static)
         for(r=0; r<R; ++r){
             for(c=0; c<C; ++c){
                 for(a=0; a<A; ++a){
@@ -177,7 +177,7 @@ int get_region_min_grade(int **region, int C, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int c, a, thread_num = omp_get_thread_num();
-        #pragma omp for private(c,a)
+        #pragma omp for simd private(c,a) collapse(2) aligned(region:16) schedule(simd:static)
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
                 if(region[c][a] < results[thread_num]){
@@ -205,7 +205,7 @@ int get_city_min_grade(int *city, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int a, thread_num = omp_get_thread_num();
-        #pragma omp for private(a)
+        #pragma omp for simd private(a) aligned(city:16) schedule(simd:static)
         for(a=0; a<A; ++a){
             if(city[a] < results[thread_num]){
                 results[thread_num] = city[a];
@@ -231,7 +231,7 @@ int get_country_max_grade(int ***grades, int R, int C, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int r, c, a, thread_num = omp_get_thread_num();
-        #pragma omp for private(r,c,a)
+        #pragma omp for simd private(r,c,a) collapse(3) aligned(grades:16) schedule(simd:static)
         for(r=0; r<R; ++r){
             for(c=0; c<C; ++c){
                 for(a=0; a<A; ++a){
@@ -261,7 +261,7 @@ int get_region_max_grade(int **region, int C, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int c, a, thread_num = omp_get_thread_num();
-        #pragma omp for private(c,a)
+        #pragma omp for simd private(c,a) collapse(2) aligned(region:16) schedule(simd:static)
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
                 if(region[c][a] > results[thread_num]){
@@ -289,7 +289,7 @@ int get_city_max_grade(int *city, int A){
     #pragma omp parallel num_threads(num_threads)
     {
         int a, thread_num = omp_get_thread_num();
-        #pragma omp for private(a)
+        #pragma omp for simd private(a) aligned(city:16) schedule(simd:static)
         for(a=0; a<A; ++a){
             if(city[a] > results[thread_num]){
                 results[thread_num] = city[a];
@@ -308,7 +308,7 @@ int get_city_max_grade(int *city, int A){
 int get_country_mean_grade(int ***grades, int R, int C, int A) {
     float sum = 0;
     int r, c, a;
-    #pragma omp parallel for reduction(+:sum) private(r,c,a)
+    #pragma omp parallel for simd reduction(+:sum) private(r,c,a) collapse(3) aligned(grades:16) schedule(simd:static)
     for(r=0; r<R; ++r){
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
@@ -324,7 +324,7 @@ int get_country_mean_grade(int ***grades, int R, int C, int A) {
 float get_region_mean_grade(int **region, int C, int A) {
     float sum = 0;
     int c, a;
-    #pragma omp parallel for reduction(+:sum) private(c,a)
+    #pragma omp parallel for simd reduction(+:sum) private(c,a) collapse(2) aligned(region:16) schedule(simd:static)
     for(c=0; c<C; ++c){
         for(a=0; a<A; ++a){
             sum += (float) region[c][a];
@@ -338,7 +338,7 @@ float get_region_mean_grade(int **region, int C, int A) {
 float get_city_mean_grade(int *city, int A) {
     float sum = 0;
     int a;
-    #pragma omp parallel for reduction(+:sum) private(a)
+    #pragma omp parallel for simd reduction(+:sum) private(a) aligned(city:16) schedule(simd:static)
     for(a=0; a<A; ++a){
         sum += (float) city[a];
     }
@@ -350,7 +350,7 @@ float get_city_mean_grade(int *city, int A) {
 int get_country_grades_std_deviation(int ***grades, int R, int C, int A, float mean) {
     float sum = 0;
     int r, c, a;
-    #pragma omp parallel for reduction(+:sum) shared(mean) private(r,c,a)
+    #pragma omp parallel for simd reduction(+:sum) shared(mean) private(r,c,a) collapse(3) aligned(grades:16) schedule(simd:static)
     for(r=0; r<R; ++r){
         for(c=0; c<C; ++c){
             for(a=0; a<A; ++a){
@@ -366,7 +366,7 @@ int get_country_grades_std_deviation(int ***grades, int R, int C, int A, float m
 float get_region_grades_std_deviation(int **region, int C, int A, float mean) {
     float sum = 0;
     int c, a;
-    #pragma omp parallel for reduction(+:sum) shared(mean) private(c,a)
+    #pragma omp parallel for simd reduction(+:sum) shared(mean) private(c,a) collapse(2) aligned(region:16) schedule(simd:static)
     for(c=0; c<C; ++c){
         for(a=0; a<A; ++a){
             sum += pow((region[c][a] - mean), 2.0);
@@ -380,7 +380,7 @@ float get_region_grades_std_deviation(int **region, int C, int A, float mean) {
 float get_city_grades_std_deviation(int *city, int A, float mean) {
     float sum = 0;
     int a;
-    #pragma omp parallel for reduction(+:sum) shared(mean) private(a)
+    #pragma omp parallel for simd reduction(+:sum) shared(mean) private(a) aligned(city:16) schedule(simd:static)
     for(a=0; a<A; ++a){
         sum += pow((city[a] - mean), 2.0);
     }
@@ -559,8 +559,10 @@ int main(void) {
     float median, mean, std;
 
     // Otimização global
-    int global_region_max = INT_MIN, global_region_argmax = 0;
-    int global_city_max = INT_MIN, global_city_argmax[2] = {0,0}; // (region,city)
+    float global_region_max = FLT_MIN; 
+    int global_region_argmax = 0;
+    float global_city_max = FLT_MIN;
+    int global_city_argmax[2] = {0,0}; // (region,city)
 
     // Para cálculo de tempo
     double times[NUM_ATTEMPTS];
@@ -572,7 +574,7 @@ int main(void) {
 
     // Geração das notas
     grades = generate_grades(R, C, A, MAX_GRADE);
-    print_grades(grades, R, C, A);
+    print_grades_to_numpy(grades, R, C, A);
 
     // Dados das cidades
     for(region=0; region<R; ++region) {
