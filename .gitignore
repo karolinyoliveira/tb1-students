@@ -2,3 +2,7 @@ ex
 .vscode
 teste.in
 cluster
+*.txt
+obj/*.o
+par
+seq

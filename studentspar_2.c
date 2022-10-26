@@ -220,50 +220,6 @@ int get_city_min_grade(int *city, int A){
 }
 
 
-// Calcula o tempo de execução do mínimo global e o imprime
-void print_country_min_grade(int ***grades, int R, int C, int A){
-    int i, min;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        min = get_country_min_grade(grades, R, C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("country minimum grade: %d. Mean time elapsed: %lf.\n", min, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do mínimo da região e o imprime
-void print_region_min_grade(int ***grades, int region, int C, int A){
-    int i, min;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        min = get_region_min_grade(grades[region], C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d minimum grade: %d. Mean time elapsed: %lf.\n", region, min, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do mínimo da cidade e o imprime
-void print_city_min_grade(int ***grades, int region, int city, int A){
-    int i, min;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        min = get_city_min_grade(grades[region][city], A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d, city %d minimum grade: %d. Mean time elapsed: %lf.\n", region, city, min, get_mean(times, NUM_ATTEMPTS));
-}
-
 // Retorna a nota máxima do país
 int get_country_max_grade(int ***grades, int R, int C, int A){
 
@@ -348,51 +304,6 @@ int get_city_max_grade(int *city, int A){
 }
 
 
-// Calcula o tempo de execução do máximo global e o imprime
-void print_country_max_grade(int ***grades, int R, int C, int A){
-    int i, max;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        max = get_country_max_grade(grades, R, C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("country maximum grade: %d. Mean time elapsed: %lf.\n", max, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do máximo da região e o imprime
-void print_region_max_grade(int ***grades, int region, int C, int A){
-    int i, max;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        max = get_region_max_grade(grades[region], C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d maximum grade: %d. Mean time elapsed: %lf.\n", region, max, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do máximo da cidade e o imprime
-void print_city_max_grade(int ***grades, int region, int city, int A){
-    int i, max;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        max = get_city_max_grade(grades[region][city], A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d, city %d maximum grade: %d. Mean time elapsed: %lf.\n", region, city, max, get_mean(times, NUM_ATTEMPTS));
-}
-
-
 // Obtém a nota média do país
 int get_country_mean_grade(int ***grades, int R, int C, int A) {
     float sum = 0;
@@ -435,56 +346,10 @@ float get_city_mean_grade(int *city, int A) {
 }
 
 
-// Calcula o tempo de execução da média do país e o imprime
-void print_country_mean_grade(int ***grades, int R, int C, int A){
-    int i, mean;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        mean = get_country_mean_grade(grades, R, C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("country mean grade: %d. Mean time elapsed: %lf.\n", mean, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução da média da região e o imprime
-void print_region_mean_grade(int ***grades, int region, int C, int A){
-    int i, mean;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        mean = get_region_mean_grade(grades[region], C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d mean grade: %d. Mean time elapsed: %lf.\n", region, mean, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução da média da cidade e o imprime
-void print_city_mean_grade(int ***grades, int region, int city, int A){
-    int i, mean;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        mean = get_city_mean_grade(grades[region][city], A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d, city %d mean grade: %d. Mean time elapsed: %lf.\n", region, city, mean, get_mean(times, NUM_ATTEMPTS));
-}
-
-
 // Obtém o desvio padrão das notas do país
-int get_country_grades_std_deviation(int ***grades, int R, int C, int A) {
-    int sum = 0;
+int get_country_grades_std_deviation(int ***grades, int R, int C, int A, float mean) {
+    float sum = 0;
     int r, c, a;
-    int mean = get_country_mean_grade(grades, R, C, A);
     #pragma omp parallel for reduction(+:sum) shared(mean) private(r,c,a)
     for(r=0; r<R; ++r){
         for(c=0; c<C; ++c){
@@ -498,10 +363,9 @@ int get_country_grades_std_deviation(int ***grades, int R, int C, int A) {
 
 
 // Obtém o desvio padrão das notas da região
-float get_region_grades_std_deviation(int **region, int C, int A) {
+float get_region_grades_std_deviation(int **region, int C, int A, float mean) {
     float sum = 0;
     int c, a;
-    float mean = get_region_mean_grade(region, C, A);
     #pragma omp parallel for reduction(+:sum) shared(mean) private(c,a)
     for(c=0; c<C; ++c){
         for(a=0; a<A; ++a){
@@ -513,60 +377,14 @@ float get_region_grades_std_deviation(int **region, int C, int A) {
 
 
 // Obtém o desvio padrão das notas da cidade
-float get_city_grades_std_deviation(int *city, int A) {
+float get_city_grades_std_deviation(int *city, int A, float mean) {
     float sum = 0;
     int a;
-    float mean = get_city_mean_grade(city, A);
     #pragma omp parallel for reduction(+:sum) shared(mean) private(a)
     for(a=0; a<A; ++a){
         sum += pow((city[a] - mean), 2.0);
     }
     return sqrt(sum / A);
-}
-
-
-// Calcula o tempo de execução do desvio padrão do país e o imprime
-void print_country_std_grade(int ***grades, int R, int C, int A){
-    int i, std;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        std = get_country_grades_std_deviation(grades, R, C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("country grade std: %d. Mean time elapsed: %lf.\n", std, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do desvio padrão da região e o imprime
-void print_region_std_grade(int ***grades, int region, int C, int A){
-    int i, std;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        std = get_region_grades_std_deviation(grades[region], C, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d grade std: %d. Mean time elapsed: %lf.\n", region, std, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução do desvio padrão da cidade e o imprime
-void print_city_std_grade(int ***grades, int region, int city, int A){
-    int i, std;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-        start = omp_get_wtime();
-        std = get_city_grades_std_deviation(grades[region][city], A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-    }
-    printf("region %d, city %d grade std: %d. Mean time elapsed: %lf.\n", region, city, std, get_mean(times, NUM_ATTEMPTS));
 }
 
 
@@ -727,131 +545,6 @@ float get_city_median_grade(int *city, int A){
 }
 
 
-// Calcula o tempo de execução da mediana do país e o imprime
-void print_country_median_grade(int ***grades, int R, int C, int A){
-    int i;
-    float median;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-
-        // Preparação para utilizar o mergesort com a mesma entrada várias vezes
-        int *flatten_grades = flatten_country_grades(grades, R, C, A);
-
-        // Região de cálculo de tempo
-        start = omp_get_wtime();
-        median = get_median(flatten_grades, R*C*A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-
-        // Liberação do vetor temporário
-        free(flatten_grades);
-    }
-    printf("country median grade: %.2f. Mean time elapsed: %lf.\n", median, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução da mediana da região e o imprime
-void print_region_median_grade(int ***grades, int region, int C, int A){
-    int i;
-    float median;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-
-        // Preparação para utilizar o mergesort com a mesma entrada várias vezes
-        int *flatten_grades = flatten_region_grades(grades[region], C, A);
-
-        // Região de cálculo de tempo
-        start = omp_get_wtime();
-        median = get_median(flatten_grades, C*A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-
-        // Liberação do vetor temporário
-        free(flatten_grades);
-    }
-    printf("region %d median grade: %.2f. Mean time elapsed: %lf.\n", region, median, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Calcula o tempo de execução da mediana da cidade e o imprime
-void print_city_median_grade(int ***grades, int region, int city, int A){
-    int i;
-    float median;
-    double start, end;
-    double times[NUM_ATTEMPTS];
-    for(i=0; i<NUM_ATTEMPTS; ++i){
-
-        // Preparação para utilizar o mergesort com a mesma entrada várias vezes
-        int *flatten_grades = copy_city(grades[region][city], A);
-
-        // Região de cálculo de tempo
-        start = omp_get_wtime();
-        median = get_median(flatten_grades, A);
-        end = omp_get_wtime();
-        times[i] = end-start;
-
-        // Liberação do vetor temporário
-        free(flatten_grades);
-    }
-    printf("region %d, city %d median grade: %.2f. Mean time elapsed: %lf.\n", region, city, median, get_mean(times, NUM_ATTEMPTS));
-}
-
-
-// Função para teste
-int test(void) {
-
-    // Variáveis locais
-    int R, C, A, seed;
-
-    // Leitura dos parâmetros e ativação de semente
-    scanf("%d%d%d%d", &R, &C, &A, &seed);
-    srand(seed);
-
-    // Geração das notas
-    int ***grades = generate_grades(R, C, A, MAX_GRADE);
-    print_grades_to_numpy(grades, R, C, A);
-
-    // Aviso sobre o número de tentativas
-    printf("obs.: for every output, %d attempts were taken to get mean time elapsed.\n\n", NUM_ATTEMPTS);
-    
-    // Notas mínimas
-    print_country_min_grade(grades, R, C, A);
-    print_region_min_grade(grades, 0, C, A);
-    print_city_min_grade(grades, 0, 0, A);
-    printf("\n");
-
-    // Notas máximas
-    print_country_max_grade(grades, R, C, A);
-    print_region_max_grade(grades, 0, C, A);
-    print_city_max_grade(grades, 0, 0, A);
-    printf("\n");
-
-    // Médias
-    print_country_mean_grade(grades, R, C, A);
-    print_region_mean_grade(grades, 0, C, A);
-    print_city_mean_grade(grades, 0, 0, A);
-    printf("\n");
-    
-    // Desvios-padrão
-    print_country_std_grade(grades, R, C, A);
-    print_region_std_grade(grades, 0, C, A);
-    print_city_std_grade(grades, 0, 0, A);
-    printf("\n");
-    
-    // Medianas
-    print_country_median_grade(grades, R, C, A);
-    print_region_median_grade(grades, 0, C, A);
-    print_city_median_grade(grades, 0, 0, A);
-    printf("\n");
-
-    // Finalização
-    free_grades(grades, R, C);
-    return EXIT_SUCCESS;
-}
-
-
 int main(void) {
 
     // Iteradores
@@ -888,7 +581,7 @@ int main(void) {
             max = get_city_max_grade(grades[region][city], A);
             median = get_city_median_grade(grades[region][city], A);
             mean = get_city_mean_grade(grades[region][city], A);
-            std = get_city_grades_std_deviation(grades[region][city], A);
+            std = get_city_grades_std_deviation(grades[region][city], A, mean);
             printf (
                 "Reg %d - Cid %d: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", 
                 region, city, min, max, median, mean, std
@@ -908,7 +601,7 @@ int main(void) {
         max = get_region_max_grade(grades[region], C, A);
         median = get_region_median_grade(grades[region], C, A);
         mean = get_region_mean_grade(grades[region], C, A);
-        std = get_region_grades_std_deviation(grades[region], C, A);
+        std = get_region_grades_std_deviation(grades[region], C, A, mean);
         printf (
             "Reg %d: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n", 
             region, min, max, median, mean, std
@@ -924,7 +617,7 @@ int main(void) {
     max = get_country_max_grade(grades, R, C, A);
     median = get_country_median_grade(grades, R, C, A);
     mean = get_country_mean_grade(grades, R, C, A);
-    std = get_country_grades_std_deviation(grades, R, C, A);
+    std = get_country_grades_std_deviation(grades, R, C, A, mean);
     printf (
         "\nBrasil: menor: %d, maior: %d, mediana: %.2f, média: %.2f e DP: %.2f\n\n", 
         min, max, median, mean, std
@@ -947,7 +640,7 @@ int main(void) {
                 max = get_city_max_grade(grades[region][city], A);
                 median = get_city_median_grade(grades[region][city], A);
                 mean = get_city_mean_grade(grades[region][city], A);
-                std = get_city_grades_std_deviation(grades[region][city], A);
+                std = get_city_grades_std_deviation(grades[region][city], A, mean);
             }
         }
 
@@ -957,7 +650,7 @@ int main(void) {
             max = get_region_max_grade(grades[region], C, A);
             median = get_region_median_grade(grades[region], C, A);
             mean = get_region_mean_grade(grades[region], C, A);
-            std = get_region_grades_std_deviation(grades[region], C, A);
+            std = get_region_grades_std_deviation(grades[region], C, A, mean);
         }
 
         // Para o país
@@ -965,7 +658,7 @@ int main(void) {
         max = get_country_max_grade(grades, R, C, A);
         median = get_country_median_grade(grades, R, C, A);
         mean = get_country_mean_grade(grades, R, C, A);
-        std = get_country_grades_std_deviation(grades, R, C, A);
+        std = get_country_grades_std_deviation(grades, R, C, A, mean);
         
         // Finalização
         end = omp_get_wtime();
