@@ -14,7 +14,7 @@ all: $(SEQ_BIN) $(PAR_BIN)
 
 # Produção do executável
 $(SEQ_BIN): obj/studentsseq.o
-	$(CC) obj/studentsseq.o -o $(SEQ_BIN) -lm
+	$(CC) obj/studentsseq.o -fopenmp -o $(SEQ_BIN) -lm
 $(PAR_BIN): obj/studentspar_2.o
 	$(CC) obj/studentspar_2.o -fopenmp -o $(PAR_BIN) -lm
 

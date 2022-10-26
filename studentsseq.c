@@ -8,8 +8,19 @@
 #define N_NOTAS_CID A
 #define N_NOTAS_REG (C * A)
 #define N_NOTAS_BR (R * C * A)
+#define NUM_ATTEMPTS 1 // valor usado para gerar uma média do tempo de execução no momento das coletas para
 
-int ***geradorDeNotas(int R, int C, int A, int seed);
+/// @brief Gera uma matriz de notas aleatórias
+/// @param R Quantia de regiões.
+/// @param C Quantia de cidades por região.
+/// @param A Quantia de estudantes por cidade.
+/// @return Matriz com notas pseudoaleatórias, de cardinalidade R*C*A
+int ***geradorDeNotas(int R, int C, int A);
+
+/// @brief Obtém a mediana de um vetor de frequências
+/// @param v Vetor de frequências, da qual será extraída a mediana
+/// @param tam Número de elementos do vetor v
+/// @return Mediana da amostra
 float Mediana(int *v, int tam);
 
 int main(void)
@@ -18,7 +29,7 @@ int main(void)
     scanf("%d%d%d%d", &R, &C, &A, &seed);
     srand(seed);
 
-    int ***notas = geradorDeNotas(R, C, A, seed);
+    int ***notas = geradorDeNotas(R, C, A);
 
     // --------- Cálculos --------- //
     // variáveis de cidade
@@ -49,146 +60,150 @@ int main(void)
     float mediana, media, desvpad;
 
     // ========================================================================= //
-    float begin = omp_get_wtime();
-
-    // Min, Max
-    for (int regiao = 0; regiao < R; regiao++)
+    float begin, end, totalTime;
+    for (int i = 0; i < NUM_ATTEMPTS; i++)
     {
-        estatsReg[regiao][0] = 101, estatsReg[regiao][1] = -1;
-        for (int cidade = 0; cidade < C; cidade++)
+        begin = omp_get_wtime();
+
+        // Min, Max
+        for (int regiao = 0; regiao < R; regiao++)
         {
-            for (int min = 0; min <= NOTA_MAXIMA; min++)
+            estatsReg[regiao][0] = 101, estatsReg[regiao][1] = -1;
+            for (int cidade = 0; cidade < C; cidade++)
             {
-                if (notas[regiao][cidade][min])
+                for (int min = 0; min <= NOTA_MAXIMA; min++)
                 {
-                    estatsCid[regiao][cidade][0] = min;
-                    break;
+                    if (notas[regiao][cidade][min]) // primeiro valor com frequência diferente de 0 começando em 0
+                    {
+                        estatsCid[regiao][cidade][0] = min;
+                        break;
+                    }
                 }
-            }
 
-            for (int max = NOTA_MAXIMA; max >= 0; max--)
-            {
-                if (notas[regiao][cidade][max])
+                for (int max = NOTA_MAXIMA; max >= 0; max--)
                 {
-                    estatsCid[regiao][cidade][1] = max;
-                    break;
+                    if (notas[regiao][cidade][max]) // primeiro valor com frequência diferente de 0 começando em 100
+                    {
+                        estatsCid[regiao][cidade][1] = max;
+                        break;
+                    }
                 }
+
+                if (estatsCid[regiao][cidade][0] < estatsReg[regiao][0]) // minimo da cidade menor que mínimo da região
+                    estatsReg[regiao][0] = estatsCid[regiao][cidade][0];
+
+                if (estatsCid[regiao][cidade][1] > estatsReg[regiao][1]) // máximo da cidade maior que máximo da região
+                    estatsReg[regiao][1] = estatsCid[regiao][cidade][1];
             }
+            if (estatsReg[regiao][0] < menor) // minimo da região menor que mínimo do país
+                menor = estatsReg[regiao][0];
 
-            if (estatsCid[regiao][cidade][0] < estatsReg[regiao][0]) // minimo da cidade menor que mínimo da região
-                estatsReg[regiao][0] = estatsCid[regiao][cidade][0];
-
-            if (estatsCid[regiao][cidade][1] > estatsReg[regiao][1]) // máximo da cidade maior que máximo da região
-                estatsReg[regiao][1] = estatsCid[regiao][cidade][1];
+            if (estatsReg[regiao][1] > maior) // máximo da região maior que máximo do país
+                maior = estatsReg[regiao][1];
         }
-        if (estatsReg[regiao][0] < menor) // minimo da região menor que mínimo do país
-            menor = estatsReg[regiao][0];
 
-        if (estatsReg[regiao][1] > maior) // máximo da região maior que máximo do país
-            maior = estatsReg[regiao][1];
-    }
+        // Merge das Notas para o cálculo da mediana
+        for (int regiao = 0; regiao < R; regiao++)
+        {
+            for (int cidade = 0; cidade < C; cidade++)
+            {
+                for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
+                {
+                    notasReg[regiao][nota] += notas[regiao][cidade][nota];
+                }
+            }
+        }
 
-    // Merge das Notas
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        for (int cidade = 0; cidade < C; cidade++)
+        for (int regiao = 0; regiao < R; regiao++)
         {
             for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
             {
-                notasReg[regiao][nota] += notas[regiao][cidade][nota];
+                notasBrasil[nota] += notasReg[regiao][nota];
             }
         }
-    }
 
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
+        // Medianas
+        mediana = Mediana(notasBrasil, N_NOTAS_BR);
+        for (int regiao = 0; regiao < R; regiao++)
         {
-            notasBrasil[nota] += notasReg[regiao][nota];
-        }
-    }
-
-    // Medianas
-    mediana = Mediana(notasBrasil, N_NOTAS_BR);
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        for (int cidade = 0; cidade < C; cidade++)
-        {
-            estatsCid[regiao][cidade][2] = Mediana(notas[regiao][cidade], N_NOTAS_CID);
-        }
-        estatsReg[regiao][2] = Mediana(notasReg[regiao], N_NOTAS_REG);
-    }
-
-    // Medias
-    long int somaCid, somaReg, soma = 0;
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        somaReg = 0;
-        for (int cidade = 0; cidade < C; cidade++)
-        {
-            somaCid = 0;
-            for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
+            for (int cidade = 0; cidade < C; cidade++)
             {
-                for (int ocorrencias = 0; ocorrencias < notas[regiao][cidade][nota]; ocorrencias++)
-                    somaCid += nota;
+                estatsCid[regiao][cidade][2] = Mediana(notas[regiao][cidade], N_NOTAS_CID);
             }
-            somaReg += somaCid;
-            estatsCid[regiao][cidade][3] = (float)somaCid / N_NOTAS_CID;
+            estatsReg[regiao][2] = Mediana(notasReg[regiao], N_NOTAS_REG);
         }
-        estatsReg[regiao][3] = (float)somaReg / N_NOTAS_REG;
-        soma += somaReg;
-    }
-    media = (float)soma / N_NOTAS_BR;
 
-    // Desvpads
-    float varCid = 0.0, varReg = 0.0, var = 0.0, difCid, difReg, dif;
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        varReg = 0.0;
-        for (int cidade = 0; cidade < C; cidade++)
+        // Medias
+        long int somaCid, somaReg, soma = 0;
+        for (int regiao = 0; regiao < R; regiao++)
         {
-            varCid = 0.0;
-            for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
+            somaReg = 0;
+            for (int cidade = 0; cidade < C; cidade++)
             {
-                for (int ocorrencias = 0; ocorrencias < notas[regiao][cidade][nota]; ocorrencias++)
+                somaCid = 0;
+                for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
                 {
-                    difCid = estatsCid[regiao][cidade][3] - nota; // media da cidade menos nota atual
-                    difReg = estatsReg[regiao][3] - nota;
-                    dif = media - nota;
+                    for (int ocorrencias = 0; ocorrencias < notas[regiao][cidade][nota]; ocorrencias++)
+                        somaCid += nota;
+                }
+                somaReg += somaCid;
+                estatsCid[regiao][cidade][3] = (float)somaCid / N_NOTAS_CID;
+            }
+            estatsReg[regiao][3] = (float)somaReg / N_NOTAS_REG;
+            soma += somaReg;
+        }
+        media = (float)soma / N_NOTAS_BR;
 
-                    varCid += difCid * difCid;
-                    varReg += difReg * difReg;
-                    var += dif * dif;
+        // Desvios-padrão
+        float varCid = 0.0, varReg = 0.0, var = 0.0, difCid, difReg, dif;
+        for (int regiao = 0; regiao < R; regiao++)
+        {
+            varReg = 0.0;
+            for (int cidade = 0; cidade < C; cidade++)
+            {
+                varCid = 0.0;
+                for (int nota = 0; nota <= NOTA_MAXIMA; nota++)
+                {
+                    for (int ocorrencias = 0; ocorrencias < notas[regiao][cidade][nota]; ocorrencias++)
+                    {
+                        difCid = estatsCid[regiao][cidade][3] - nota; // media da cidade menos nota atual
+                        difReg = estatsReg[regiao][3] - nota;
+                        dif = media - nota;
+
+                        varCid += difCid * difCid;
+                        varReg += difReg * difReg;
+                        var += dif * dif;
+                    }
+                }
+                estatsCid[regiao][cidade][4] = sqrt(varCid / A);
+            }
+            estatsReg[regiao][4] = sqrt(varReg / (C * A));
+        }
+        desvpad = sqrt(var / (R * C * A));
+
+        // Melhores
+        float currCid = -1, currReg = -1;
+        for (int regiao = 0; regiao < R; regiao++)
+        {
+            for (int cidade = 0; cidade < C; cidade++)
+            {
+                if (estatsCid[regiao][cidade][3] > currCid)
+                {
+                    currCid = estatsCid[regiao][cidade][3];
+                    melhorCid[0] = regiao;
+                    melhorCid[1] = cidade;
                 }
             }
-            estatsCid[regiao][cidade][4] = sqrt(varCid / A);
-        }
-        estatsReg[regiao][4] = sqrt(varReg / (C * A));
-    }
-    desvpad = sqrt(var / (R * C * A));
 
-    // Melhores
-    float currCid = -1, currReg = -1;
-    for (int regiao = 0; regiao < R; regiao++)
-    {
-        for (int cidade = 0; cidade < C; cidade++)
-        {
-            if (estatsCid[regiao][cidade][3] > currCid)
+            if (estatsReg[regiao][3] > currReg)
             {
-                currCid = estatsCid[regiao][cidade][3];
-                melhorCid[0] = regiao;
-                melhorCid[1] = cidade;
+                currReg = estatsReg[regiao][3];
+                melhorReg = regiao;
             }
         }
-
-        if (estatsReg[regiao][3] < currCid)
-        {
-            currReg = estatsReg[regiao][3];
-            melhorReg = regiao;
-        }
+        end = omp_get_wtime();
+        totalTime += end - begin;
     }
-
-    float end = omp_get_wtime();
     // ========================================================================= //
 
     // --------- Resultados --------- //
@@ -219,7 +234,7 @@ int main(void)
     printf("\n");
 
     // Tempo de Resposta
-    printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", end - begin);
+    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", totalTime / NUM_ATTEMPTS);
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)
@@ -243,7 +258,7 @@ int main(void)
     return 0;
 }
 
-int ***geradorDeNotas(int R, int C, int A, int seed)
+int ***geradorDeNotas(int R, int C, int A)
 {
     int i, j, k;
     int ***notas = (int ***)malloc(sizeof(int **) * R);
@@ -263,10 +278,13 @@ int ***geradorDeNotas(int R, int C, int A, int seed)
         {
             for (k = 0; k < A; k++)
             {
-                int teste = rand() % 101;
-                notas[i][j][teste]++;
+                int nota = rand() % 101; //[0:100]
+                notas[i][j][nota]++;
+                printf("%d ", nota);
             }
+            printf("\n");
         }
+        printf("\n");
     }
     return notas;
 }
@@ -278,7 +296,7 @@ float Mediana(int *v, int tam)
     for (int i = 0; i <= NOTA_MAXIMA; i++)
     {
         contador += v[i];
-        if ((float)contador >= (float)(tam / 2 + (tam % 2 != 0))) // teto da divisão
+        if (contador >= (tam / 2 + (tam % 2 != 0))) // teto da divisão
         {
             if (tam % 2)
             {
@@ -286,13 +304,14 @@ float Mediana(int *v, int tam)
             }
             else
             {
+                // printf("i: %d\n", i);
                 int j;
                 for (j = i + 1; j <= NOTA_MAXIMA; j++)
                 {
                     if (v[j])
                         break;
                 }
-                return (i + j) / 2;
+                return (float)(i + j) / 2;
             }
         }
     }
