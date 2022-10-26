@@ -8,7 +8,7 @@
 #define N_NOTAS_CID A
 #define N_NOTAS_REG (C * A)
 #define N_NOTAS_BR (R * C * A)
-#define NUM_ATTEMPTS 1 // valor usado para gerar uma média do tempo de execução no momento das coletas para
+#define NUM_ATTEMPTS 1 // valor usado para gerar uma média do tempo de execução no momento das coletas para o cálculo da Q3
 
 /// @brief Gera uma matriz de notas aleatórias
 /// @param R Quantia de regiões.
@@ -304,7 +304,6 @@ float Mediana(int *v, int tam)
             }
             else
             {
-                // printf("i: %d\n", i);
                 int j;
                 for (j = i + 1; j <= NOTA_MAXIMA; j++)
                 {
