@@ -12,6 +12,7 @@ Nomes dos integrantes deste grupo que resolveram o trabalho: </strong>
 
 - Karoliny Oliveira Ozias Silva
 - João Lucas Rodrigues Constantino
+- Luiz Fernando Silva Eugênio dos Santos
 
 <u><strong> Resposta para Q01: </strong></u>
 

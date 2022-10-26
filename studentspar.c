@@ -146,7 +146,7 @@ int main(void)
         // Medias
         long int somaCid, somaReg, soma = 0;
 
-#pragma omp parallel for
+#pragma omp parallel for firstprivate(somaCid, somaReg)
         for (int regiao = 0; regiao < R; regiao++)
         {
             somaReg = 0;
@@ -170,7 +170,7 @@ int main(void)
         // Desvpads
         float varCid = 0.0, varReg = 0.0, var = 0.0, difCid, difReg, dif;
 
-#pragma omp parallel for
+#pragma omp parallel for firstprivate(varReg, varCid, difCid, difReg)
         for (int regiao = 0; regiao < R; regiao++)
         {
             varReg = 0.0;
@@ -252,7 +252,7 @@ int main(void)
     printf("\n");
 
     // Tempo de Resposta
-    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lffs\n", totalTime / NUM_ATTEMPTS);
+    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", totalTime / NUM_ATTEMPTS);
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)
