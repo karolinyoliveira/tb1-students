@@ -1,3 +1,18 @@
+<strong> Universidade de São Paulo - ICMC - BCC
+
+SSC0903 - Computação de Alto Desempenho (2022/2)
+
+Primeiro Trabalho Prático (TB1) - Resolução em Grupo
+
+Turma: A
+
+Número do Grupo: 01
+
+Nomes dos integrantes deste grupo que resolveram o trabalho: </strong>
+
+Karoliny Oliveira Ozias Silva
+
+<u><strong> Resposta para Q01: </strong></u>
 
 # Introdução
 
@@ -160,7 +175,7 @@ id49((min)) --> id50((min)) %% Redução do país
 Para a Comunicação neste problema, o fluxo de dados segue o grafo de dependências das tarefas. Os dados obtidos pela tarefa inicial são transmitidos às tarefas de obtenção de mínimos por região, cada qual transmite seus dados para as respectivas tarefas de obtenção de mínimos por cidade que, por sua vez, transmitem os dados para as tarefas atômicas de obtenção de mínimos por estudante -- as quais retornam a nota dele em si. A partir daí, a comunicação ocorre em pares em níveis equivalentes da árvore, até que se obtenha o mínimo buscado -- seja ele por cidade, por região ou por país, bastando tomar o subgrafo correspondente para cômputo.
 
 ### Aglomeração
-Em geral, são criados tantos processos quantos elementos de processamento disponíveis no sistema computacional em questão. Todavia, a tarefa inicial é atribuída a único processo -- tal como a tarefa final, que retornará o mínimo buscado. Daí, caso seja buscado o mínimo da cidade, da região ou do país, respectivamente, será criado um *pool* de tarefas para cada par de estudante, cada cidade ou cada região -- o qual será consumido pelos processos criados anteriormente. Em geral, não haverá regiões críticas entre processos.
+Em geral, são criados tantos processos quantos elementos de processamento disponíveis no sistema computacional em questão. Todavia, a tarefa inicial é atribuída a um único processo -- tal como a tarefa final, que retornará o mínimo buscado. Daí, caso seja buscado o mínimo da cidade, da região ou do país, respectivamente, será criado um *pool* de tarefas para cada par de estudante, cada cidade ou cada região -- o qual será consumido pelos processos criados anteriormente. Em geral, não haverá regiões críticas entre processos.
 
 ## Máximo
 
@@ -708,3 +723,5 @@ Para este problema, a comunicação segue o fluxo de dados do grafo de dependên
 ### Aglomeração
 
 Devem ser considerados tantos processos quanto unidades de processamento existentes no sistema computacional em uso. Assim sendo, as tarefas de mesclagem podem ser disponibilizadas em uma *pool*, sendo consumidas pelos processos conforme demanda de execução. Entretanto, o achatamento dos dados e a obtenção da mediana após ordenação dos dados devem ser, ambos, feitos por único processo.
+
+Resposta para Q03:

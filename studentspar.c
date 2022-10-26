@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <omp.h> 
+#include <omp.h>
 
 #define NOTA_MAXIMA 100
 #define N_NOTAS_CID A
@@ -132,8 +132,7 @@ int main(void)
     // Medias
     long int somaCid, somaReg, soma = 0;
 
-#pragma omp parallel for shared(soma) reduction(+ \
-                                   : soma)
+//#pragma omp parallel for reduction(+: soma)
     for (int regiao = 0; regiao < R; regiao++)
     {
         somaReg = 0;
@@ -199,7 +198,7 @@ int main(void)
             }
         }
 
-        if (estatsReg[regiao][3] < currCid)
+        if (estatsReg[regiao][3] > currReg)
         {
             currReg = estatsReg[regiao][3];
             melhorReg = regiao;
@@ -238,7 +237,6 @@ int main(void)
 
     // Tempo de Resposta
     printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", end - begin);
-    printf("%d\n", omp_get_max_threads());
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)

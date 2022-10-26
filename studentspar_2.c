@@ -8,8 +8,8 @@
 // Nota máxima exclusiva
 #define MAX_GRADE 100
 
-// Número de vezes que executa um algoritmo para tomar a média de tempo
-#define NUM_ATTEMPTS 32
+// Número de vezes que executa um algoritmo para tomar a média de tempo 
+#define NUM_ATTEMPTS 1
 
 // Para ativar as threads aninhadas do mergesort
 #define OMP_NESTED TRUE
@@ -28,7 +28,7 @@ int ***generate_grades(int R, int C, int A, int max_grade) {
         for(j=0; j<C; ++j){
             output[i][j] = (int *) malloc(A * sizeof(int));
             for(k=0; k<A; ++k){
-                output[i][j][k] = rand() % max_grade;
+                output[i][j][k] = rand() % max_grade+1;
             }
         }
     }
@@ -667,7 +667,7 @@ int main(void) {
 
     // Finalização
     mean_time = get_mean(times, NUM_ATTEMPTS);
-    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs", mean_time);
+    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", mean_time);
     free_grades(grades, R, C);
     return EXIT_SUCCESS;
 }
