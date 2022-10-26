@@ -8,8 +8,20 @@
 #define N_NOTAS_CID A
 #define N_NOTAS_REG (C * A)
 #define N_NOTAS_BR (R * C * A)
+#define NUM_ATTEMPTS 1 // valor usado para gerar uma média do tempo de execução no momento das coletas para o cálculo da Q3
 
-int ***geradorDeNotas(int R, int C, int A, int seed);
+
+/// @brief Gera uma matriz de notas aleatórias
+/// @param R Quantia de regiões.
+/// @param C Quantia de cidades por região.
+/// @param A Quantia de estudantes por cidade.
+/// @return Matriz com notas pseudoaleatórias, de cardinalidade R*C*A
+int ***geradorDeNotas(int R, int C, int A);
+
+/// @brief Obtém a mediana de um vetor de frequências
+/// @param v Vetor de frequências, da qual será extraída a mediana
+/// @param tam Número de elementos do vetor v
+/// @return Mediana da amostra
 float Mediana(int *v, int tam);
 
 int main(void)
@@ -18,7 +30,7 @@ int main(void)
     scanf("%d%d%d%d", &R, &C, &A, &seed);
     srand(seed);
 
-    int ***notas = geradorDeNotas(R, C, A, seed);
+    int ***notas = geradorDeNotas(R, C, A);
 
     omp_set_num_threads(omp_get_max_threads());
 
@@ -132,7 +144,7 @@ int main(void)
     // Medias
     long int somaCid, somaReg, soma = 0;
 
-//#pragma omp parallel for reduction(+: soma)
+#pragma omp parallel for
     for (int regiao = 0; regiao < R; regiao++)
     {
         somaReg = 0;
@@ -236,7 +248,7 @@ int main(void)
     printf("\n");
 
     // Tempo de Resposta
-    printf("Tempo de resposta sem considerar E/S, em segundos: %.8fs\n", end - begin);
+    printf("Tempo de resposta sem considerar E/S, em segundos: %.3lffs\n", end - begin);
 
     // --------- Desalocações --------- //
     for (int i = 0; i < R; i++)
@@ -260,7 +272,7 @@ int main(void)
     return 0;
 }
 
-int ***geradorDeNotas(int R, int C, int A, int seed)
+int ***geradorDeNotas(int R, int C, int A)
 {
     int i, j, k;
     int ***notas = (int ***)malloc(sizeof(int **) * R);
@@ -309,7 +321,7 @@ float Mediana(int *v, int tam)
                     if (v[j])
                         break;
                 }
-                return (i + j) / 2;
+                return (float)(i + j) / 2;
             }
         }
     }
