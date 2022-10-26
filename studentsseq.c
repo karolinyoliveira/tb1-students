@@ -61,6 +61,7 @@ int main(void)
 
     // ========================================================================= //
     float begin, end, totalTime;
+    totalTime = 0;
     for (int i = 0; i < NUM_ATTEMPTS; i++)
     {
         begin = omp_get_wtime();

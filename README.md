@@ -1377,4 +1377,7 @@ Devem ser considerados tantos processos quanto unidades de processamento existen
 
 Em todos os casos, uma vez que os processadores são homogêneos, os processos serão divididos igualmente entre os processadores. 
 
-Resposta para Q03:
+**Resposta para Q03:**
+
+# Speedup e eficiência
+
