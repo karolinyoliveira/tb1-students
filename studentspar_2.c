@@ -7,12 +7,10 @@
 
 // Nota máxima exclusiva
 #define MAX_GRADE 100
+#define FREQS_LEN (MAX_GRADE + 1)
 
 // Número de vezes que executa um algoritmo para tomar a média de tempo 
-#define NUM_ATTEMPTS 1
-
-// Para ativar as threads aninhadas do mergesort
-#define OMP_NESTED TRUE
+#define NUM_ATTEMPTS 32
 
 /// @brief Gera um vetor de notas.
 /// @param R Quantia de regiões.
@@ -347,7 +345,7 @@ float get_city_mean_grade(int *city, int A) {
 
 
 // Obtém o desvio padrão das notas do país
-int get_country_grades_std_deviation(int ***grades, int R, int C, int A, float mean) {
+float get_country_grades_std_deviation(int ***grades, int R, int C, int A, float mean) {
     float sum = 0;
     int r, c, a;
     #pragma omp parallel for simd reduction(+:sum) shared(mean) private(r,c,a) schedule(simd:static)
@@ -388,15 +386,79 @@ float get_city_grades_std_deviation(int *city, int A, float mean) {
 }
 
 
-// Achata um vetor de notas de um país
-int *flatten_country_grades(int ***grades, int R, int C, int A){
-    int *output = (int *) malloc(R * C * A * sizeof(int));
-    int r, c, a;
-    #pragma omp parallel for simd private(r,c,a) schedule(simd:static)
+// Obtém a mediana a partir de um vetor de frequências
+float get_median(int *v, int tam){
+    /*
+    int its_pair = len % 2;
+    int i, j, counter = 0, ceiling = (len / 2) + its_pair;
+    for(i=0; i<MAX_GRADE; ++i){
+        counter += freqs[i];
+        if(counter > ceiling){
+            if(!its_pair)
+                return i;
+            j=i+1;
+            while(j<MAX_GRADE && freqs[j] <= 0)
+                ++j;
+            return (i+j) / 2.0;
+        }
+    }
+    */
+    int contador = 0;
+
+    for (int i = 0; i <= MAX_GRADE; i++)
+    {
+        contador += v[i];
+        if (contador >= (tam / 2 + (tam % 2 != 0))) // teto da divisão
+        {
+            if (tam % 2)
+            {
+                return i;
+            }
+            else
+            {
+                // printf("i: %d\n", i);
+                int j;
+                for (j = i + 1; j <= MAX_GRADE; j++)
+                {
+                    if (v[j])
+                        break;
+                }
+                return (float)(i + j) / 2;
+            }
+        }
+    }
+    return -1.0;
+}
+
+
+// Desaloca uma matriz de inteiros
+void free_int_matrix(int **m, int rows){
+    int i;
+    #pragma omp parallel for simd private(i) schedule(simd:static)
+    for(i=0; i<rows; ++i)
+        free(m[i]);
+    free(m);
+}
+
+
+// Mínimo
+int _min(int a, int b){
+    if(a<b)
+        return a;
+    return b;
+}
+
+
+// Faz mesclagem das notas para cálculo da mediana
+int **merge_region_grades(int ***grades, int R, int C, int A){
+    int **output = (int **) malloc(R * sizeof(int *));
+    int r, c, a, end = FREQS_LEN;//_min(A, FREQS_LEN);
+    #pragma omp parallel for simd private(r,c,a) shared(end,output) schedule(simd:static)
     for(r=0; r<R; ++r){
+        output[r] = (int *) calloc(FREQS_LEN, sizeof(int));
         for(c=0; c<C; ++c){
-            for(a=0; a<A; ++a){
-                output[r*C*A + c*A + a] = grades[r][c][a];
+            for(a=0; a<end; ++a){
+                output[r][a] += grades[r][c][a];
             }
         }
     }
@@ -404,145 +466,17 @@ int *flatten_country_grades(int ***grades, int R, int C, int A){
 }
 
 
-// Achata um vetor de notas de uma região
-int *flatten_region_grades(int **region, int C, int A){
-    int *output = (int *) malloc(C * A * sizeof(int));
-    int c, a;
-    #pragma omp parallel for simd private(c,a) schedule(simd:static)
-    for(c=0; c<C; ++c){
-        for(a=0; a<A; ++a){
-            output[c*A + a] = region[c][a];
+// Mescla as notas do país para cálculo das medianas
+int *merge_country_grades(int **region_merged_grades, int R) {
+    int *output = (int *) calloc(FREQS_LEN, sizeof(int));
+    int r, a;
+    #pragma omp parallel for simd private(r,a) shared(output) schedule(simd:static)
+    for(r=0; r<R; ++r){
+        for(a=0; a<FREQS_LEN; ++a){
+            output[a] += region_merged_grades[r][a];
         }
     }
     return output;
-}
-
-
-// Cria uma cópia do vetor de uma cidade
-int *copy_city(int *city, int A){
-    int *output = (int *) malloc(A * sizeof(int));
-    int a;
-    #pragma omp parallel for simd private(a) schedule(simd:static)
-    for(a=0; a<A; ++a)
-        output[a] = city[a];
-    return output;
-}
-
-
-// Merges two subarrays of arr[].
-// First subarray is arr[l..m]
-// Second subarray is arr[m+1..r]
-void merge(int arr[], int l, int m, int r)
-{
-    int i, j, k;
-    int n1 = m - l + 1;
-    int n2 = r - m;
- 
-    /* create temp arrays */
-    int *L = (int *) malloc(n1 * sizeof(int));
-    int *R = (int *) malloc(n2 * sizeof(int));
- 
-    /* Copy data to temp arrays L[] and R[] */
-    for (i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
- 
-    /* Merge the temp arrays back into arr[l..r]*/
-    i = 0; // Initial index of first subarray
-    j = 0; // Initial index of second subarray
-    k = l; // Initial index of merged subarray
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        }
-        else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
- 
-    /* Copy the remaining elements of L[], if there
-    are any */
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
- 
-    /* Copy the remaining elements of R[], if there
-    are any */
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
-
-    free(L);
-    free(R);
-}
- 
-
-/* l is for left index and r is right index of the
-sub-array of arr to be sorted */
-void mergeSort(int arr[], int l, int r)
-{
-    if (l < r) {
-        // Same as (l+r)/2, but avoids overflow for
-        // large l and h
-        int m = l + (r - l) / 2;
- 
-        // Sort first and second halves
-        #pragma omp parallel num_threads(2)
-        {
-            #pragma omp single nowait
-            mergeSort(arr, l, m);
-
-            #pragma omp single
-            mergeSort(arr, m + 1, r);
-
-            #pragma omp single
-            merge(arr, l, m, r);
-        }
-    }
-}
-
-
-// Obtém a mediana de um arranjo
-float get_median(int *array, int len){
-    mergeSort(array, 0, len-1);
-    if(len % 2 != 0)
-        return (float) array[len/2];
-    return (float) (array[len/2] + array[len/2 - 1]) / 2.0;
-}
-
-
-// Obtém a mediana do país
-float get_country_median_grade(int ***grades, int R, int C, int A){
-    int *flatten_grades = flatten_country_grades(grades, R, C, A);
-    float median = get_median(flatten_grades, R*C*A);
-    free(flatten_grades);
-    return median;
-}
-
-
-// Obtém a mediana da região
-float get_region_median_grade(int **region, int C, int A){
-    int *flatten_grades = flatten_region_grades(region, C, A);
-    float median = get_median(flatten_grades, C*A);
-    free(flatten_grades);
-    return median;
-}
-
-
-// Obtém a mediana da cidade
-float get_city_median_grade(int *city, int A){
-    int *city_copy = copy_city(city, A);
-    float median = get_median(city_copy, A);
-    free(city_copy);
-    return median;
 }
 
 
@@ -557,6 +491,8 @@ int main(void) {
     // Dados do problema
     int R, C, A, seed;
     int ***grades = NULL;
+    int **merged_region_grades = NULL;
+    int *merged_country_grades = NULL;
 
     // Valores de interesse
     int min, max;
@@ -578,14 +514,18 @@ int main(void) {
 
     // Geração das notas
     grades = generate_grades(R, C, A, MAX_GRADE);
-    print_grades_to_numpy(grades, R, C, A);
+    print_grades(grades, R, C, A);
+
+    // Notas mescladas para cálculo de mediana
+    merged_region_grades = merge_region_grades(grades, R, C, A);
+    merged_country_grades = merge_country_grades(merged_region_grades, R);
 
     // Dados das cidades
     for(region=0; region<R; ++region) {
         for(city=0; city<C; ++city){
             min = get_city_min_grade(grades[region][city], A);
             max = get_city_max_grade(grades[region][city], A);
-            median = get_city_median_grade(grades[region][city], A);
+            median = get_median(grades[region][city], A);
             mean = get_city_mean_grade(grades[region][city], A);
             std = get_city_grades_std_deviation(grades[region][city], A, mean);
             printf (
@@ -605,7 +545,7 @@ int main(void) {
     for(region=0; region<R; ++region) {
         min = get_region_min_grade(grades[region], C, A);
         max = get_region_max_grade(grades[region], C, A);
-        median = get_region_median_grade(grades[region], C, A);
+        median = get_median(merged_region_grades[region], C*A);
         mean = get_region_mean_grade(grades[region], C, A);
         std = get_region_grades_std_deviation(grades[region], C, A, mean);
         printf (
@@ -621,7 +561,7 @@ int main(void) {
     // Dados do país
     min = get_country_min_grade(grades, R, C, A);
     max = get_country_max_grade(grades, R, C, A);
-    median = get_country_median_grade(grades, R, C, A);
+    median = get_median(merged_country_grades, R*C*A);
     mean = get_country_mean_grade(grades, R, C, A);
     std = get_country_grades_std_deviation(grades, R, C, A, mean);
     printf (
@@ -633,11 +573,20 @@ int main(void) {
     printf("Melhor região: Região %d\n", global_region_argmax);
     printf("Melhor cidade: Região %d, Cidade %d\n\n", global_city_argmax[0], global_city_argmax[1]);
 
+    // Desalocação
+    free_int_matrix(merged_region_grades, R);
+    free(merged_country_grades);
+
+    /*
     // Para cálculo da média de tempo
     for(iteration=0; iteration<NUM_ATTEMPTS; ++iteration){
 
         // Início do cálculo de tempo
         start = omp_get_wtime();
+
+        // Notas mescladas para cálculo de mediana
+        merged_region_grades = merge_region_grades(grades, R, C, A);
+        merged_country_grades = merge_country_grades(merged_region_grades, R);
 
         // Iteração ao longo das cidades das regiões
         for(region=0; region<R; ++region) {
@@ -669,11 +618,16 @@ int main(void) {
         // Finalização
         end = omp_get_wtime();
         times[iteration] = end-start;
+
+        // Desalocação
+        free_int_matrix(merged_region_grades, R);
+        free(merged_country_grades);
     }
 
     // Finalização
     mean_time = get_mean(times, NUM_ATTEMPTS);
     printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", mean_time);
+    */
     free_grades(grades, R, C);
     return EXIT_SUCCESS;
 }

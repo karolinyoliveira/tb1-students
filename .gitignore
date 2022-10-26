@@ -4,6 +4,7 @@ teste.in
 cluster
 *.txt
 obj/*.o
+*.in
 *.out
 par
 seq
