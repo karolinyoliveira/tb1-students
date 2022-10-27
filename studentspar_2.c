@@ -506,17 +506,15 @@ int _min(int a, int b)
 int **merge_region_grades(int ***grades, int R, int C, int A)
 {
     int **output = (int **)malloc(R * sizeof(int *));
-    int r, c, a, end = FREQS_LEN; //_min(A, FREQS_LEN);
-#pragma omp parallel for simd private(r, c, a) shared(end, output) schedule(simd \
-                                                                            : static)
-    for (r = 0; r < R; ++r)
+    #pragma omp parallel for shared(output)
+    for (int r = 0; r < R; ++r)
     {
-        output[r] = (int *)calloc(FREQS_LEN, sizeof(int));
-        for (c = 0; c < C; ++c)
+        output[r] = (int *)calloc(C*A, sizeof(int));
+        for (int c = 0; c < C; ++c)
         {
-            for (a = 0; a < end; ++a)
+            for (int a = 0; a < A; ++a)
             {
-                output[r][a] += grades[r][c][a];
+                output[r][c*A+a] = grades[r][c][a];
             }
         }
     }
@@ -524,21 +522,20 @@ int **merge_region_grades(int ***grades, int R, int C, int A)
 }
 
 // Mescla as notas do país para cálculo das medianas
-int *merge_country_grades(int **region_merged_grades, int R)
+int *merge_country_grades(int **region_merged_grades, int CA, int R)
 {
-    int *output = (int *)calloc(FREQS_LEN, sizeof(int));
-    int r, a;
-#pragma omp parallel for simd private(r, a) shared(output) schedule(simd \
-                                                                    : static)
-    for (r = 0; r < R; ++r)
+    int *output = (int *)calloc(CA*R, sizeof(int));
+    #pragma omp parallel for shared(output) 
+    for (int r = 0; r < R; ++r)
     {
-        for (a = 0; a < FREQS_LEN; ++a)
+        for (int i = 0; i < CA; ++i)
         {
-            output[a] += region_merged_grades[r][a];
+            output[r*CA+i] = region_merged_grades[r][i];
         }
     }
     return output;
 }
+
 
 int main(void)
 {
@@ -579,7 +576,7 @@ int main(void)
 
     // Notas mescladas para cálculo de mediana
     merged_region_grades = merge_region_grades(grades, R, C, A);
-    merged_country_grades = merge_country_grades(merged_region_grades, R);
+    merged_country_grades = merge_country_grades(merged_region_grades, A*C, R);
 
     // Dados das cidades
     for (region = 0; region < R; ++region)
