@@ -637,6 +637,7 @@ int main(void)
     free_int_matrix(merged_region_grades, R);
     free(merged_country_grades);
 
+
     // Para cálculo da média de tempo
     for(iteration=0; iteration<NUM_ATTEMPTS; ++iteration){
 
@@ -645,14 +646,14 @@ int main(void)
 
         // Notas mescladas para cálculo de mediana
         merged_region_grades = merge_region_grades(grades, R, C, A);
-        merged_country_grades = merge_country_grades(merged_region_grades, R);
+        merged_country_grades = merge_country_grades(merged_region_grades, A*C, R);
 
         // Iteração ao longo das cidades das regiões
         for(region=0; region<R; ++region) {
             for(city=0; city<C; ++city){
                 min = get_city_min_grade(grades[region][city], A);
                 max = get_city_max_grade(grades[region][city], A);
-                median = get_city_median_grade(grades[region][city], A);
+                median = get_median(grades[region][city], A);
                 mean = get_city_mean_grade(grades[region][city], A);
                 std = get_city_grades_std_deviation(grades[region][city], A, mean);
             }
@@ -662,7 +663,7 @@ int main(void)
         for(region=0; region<R; ++region) {
             min = get_region_min_grade(grades[region], C, A);
             max = get_region_max_grade(grades[region], C, A);
-            median = get_region_median_grade(grades[region], C, A);
+            median = get_median(merged_region_grades[region], C * A);
             mean = get_region_mean_grade(grades[region], C, A);
             std = get_region_grades_std_deviation(grades[region], C, A, mean);
         }
@@ -670,7 +671,7 @@ int main(void)
         // Para o país
         min = get_country_min_grade(grades, R, C, A);
         max = get_country_max_grade(grades, R, C, A);
-        median = get_country_median_grade(grades, R, C, A);
+        median = get_median(merged_country_grades, R * C * A);
         mean = get_country_mean_grade(grades, R, C, A);
         std = get_country_grades_std_deviation(grades, R, C, A, mean);
 
@@ -686,6 +687,7 @@ int main(void)
     // Finalização
     mean_time = get_mean(times, NUM_ATTEMPTS);
     printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", mean_time);
+    
     free_grades(grades, R, C);
     return EXIT_SUCCESS;
 }
