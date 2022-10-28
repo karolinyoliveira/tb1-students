@@ -280,11 +280,8 @@ int ***geradorDeNotas(int R, int C, int A)
             {
                 int nota = rand() % 101; //[0:100]
                 notas[i][j][nota]++;
-                printf("%d ", nota);
             }
-            printf("\n");
         }
-        printf("\n");
     }
     return notas;
 }
@@ -296,7 +293,7 @@ float Mediana(int *v, int tam)
     for (int i = 0; i <= NOTA_MAXIMA; i++)
     {
         contador += v[i];
-        if (contador >= (tam / 2 + (tam % 2 != 0))) // teto da divisão
+        if (contador == (tam / 2 + (tam % 2 != 0))) // teto da divisão
         {
             if (tam % 2)
             {
@@ -313,5 +310,7 @@ float Mediana(int *v, int tam)
                 return (float)(i + j) / 2;
             }
         }
+        if (contador > (tam / 2 + (tam % 2 != 0)))
+            return i;
     }
 }
