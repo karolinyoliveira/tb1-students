@@ -1270,17 +1270,14 @@ Em todos os casos, uma vez que os processadores são homogêneos, os processos s
 
 **Resposta para Q03:**
 
-Para cálculo de speedup, realizamos testes com os valores apresentados na tabela a seguir, com p = 8
-# Speedup e eficiência com p = 8
-| Sequencial | Paralelo | Valores | Speedup |
-| --- | --- | --- | --- |
-| 0.156s | 0.266s |200 200 200 0 | 0.193s
-| 0.031s | 0.062s |100 100 100 0 |0.034s
-| 0.000s | 0.001s |10 10 10 0 |
+# Speedups relativo e Absoluto
 
-# Speedup e eficiência com p = 1
-| Sequencial | Paralelo | Valores | Eficiência |
-| --- | --- | --- | --- |
-| 0.156s | 0.266s |200 200 200 0 |
-| 0.031s | 0.062s |100 100 100 0 |
-| 0.000s | 0.001s |10 10 10 0 |
+Para cálculo de speedup, realizamos testes com os valores apresentados na tabela a seguir.
+
+| Entrada | Sequencial | Paralelo p=8 | Paralelo p=1 | Paralelo p=2 | Speedup Absoluto  | Speedup Relativo
+| --- | --- | --- | --- | --- | --- | --- |
+100 100 100 0| 0.031s | 0.062s |0.034s | 0.035s | 0.5 | 0.5
+200 200 200 0| 0.156s | 0.266s | 0.194s | 0.193s | 0.59 | 0.73
+300 300 300 0| 0.438s | 0.613s | 0.549s | 0.549s | 0.71 | 0.89
+
+Podemos notar que não apenas o algoritmo paralelo se mostrou menos eficiente que o sequencial, como o speedup relativo foi menor que 1, mostrando uma implementação inadequada, provavelmente, provavelmente devido à necessidade de comunicação entre as threads no algoritmo de sorting, por exemplo.
