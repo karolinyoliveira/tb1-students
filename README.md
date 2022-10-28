@@ -1226,153 +1226,44 @@ id50((sum)) --> id51(squared_root_mean) %% DP do país
 
 ## Mediana
 
-Para o problema da mediana, será utilizado o algoritmo de ordenação *merge sort*, que possui um paradigma de divisão e conquista. Desse modo, ao final da ordenação, basta recuperar a região central do vetor a fim de se obter a mediana, sendo esta ou o próprio elemento central -- caso o vetor tenha comprimento ímpar --, ou a média aritmética dos dois elementos centrais -- caso contrário. Para tanto, considere o seguinte pseudocódigo:
-
-```
-mergesort(array):
------------------
-len = length(array)
-if len <= 1:
-	return array
-in parallel do:
-	left = mergesort(array[0...len/2])
-	right = mergesort(array[len/2...len])
-return merge(left, right)
-```
-
 ### Particionamento
 
-Após leitura dos dados, as notas dos estudantes devem ser inseridas em um arranjo unidimensional para fins de ordenação. Daí, faz-se particionamento por dados, dividindo secções do arranjo a diferentes tarefas até que o comprimento do arranjo recebido seja atômico. Após esse momento, realiza-se mesclagem binária entre as seções até que se obtenha todo o arranjo original ordenado.
+Após leitura dos dados, eles serão segmentados por aluno, por cidade ou por região, caso esteja buscando a mediana da cidade, da região ou do país respectivamente. Daí, será feito um particionamento funcional, em que cada segmento é fornecido a uma tarefa distinta, que se responsabilizará por construir um vetor de frequências. Em seguida, para cada elemento do segmento corrente, a posição do vetor associada ao seu valor será incrementado de acordo com ele. Logo, será feita uma redução por soma de todos os vetores de frequências, isto é, todos os seus elementos são somados por posição, resultando num único vetor -- que é fornecido para o algoritmo de contagem. Nessa última etapa, uma vez que o vetor é ordenado em relação aos valores, retorna-se o primeiro elemento cuja frequência acumulada é superior ao teto da divisão do tamanho do vetor pela metade, caso tal tamanho seja ímpar, ou a média dos dois primeiros elementos, caso contrário.
 
 ```mermaid
-%% Paralelização do problema do desvio padrão
+%% Paralelização do problema da mediana
 
 %% Tipo de grafo
 graph TD 
 
 %% Inicialização
-id0[(read_data)] --> id26(flatten_data)
-id26(flatten_data) --> id1(divide)
-id26(flatten_data) --> id2(divide)
+id0[(read_data)] --> segment_1
+id0[(read_data)] --> segment_2
+id0[(read_data)] --> id1{{...}}
+id0[(read_data)] --> segment_n
 
-%% Divisão 1
-id1(divide) --> id3(divide)
-id1(divide) --> id4(divide)
-id1(divide) --> id5{{...}}
-id1(divide) --> id6(divide)
+%% Frequências
+segment_1 --> frequencies_1
+segment_2 --> frequencies_2
+segment_n --> frequencies_n
 
-%% Divisão 2
-id2(divide) --> id7(divide)
-id2(divide) --> id8(divide)
-id2(divide) --> id25{{...}}
-id2(divide) --> id10(divide)
-
-%% Recursão da divisão 1 ...
-id3(divide) --> id11{{...}}
-id4(divide) --> id12{{...}}
-id6(divide) --> id13{{...}}
-
-%% Recursão da divisão 2 ...
-id7(divide) --> id14{{...}}
-id8(divide) --> id15{{...}}
-id10(divide) --> id16{{...}}
-
-%% Mesclagem 1
-id11{{...}} --> id17(merge)
-id12{{...}} --> id17(merge)
-id12{{...}} --> id18(merge)
-id13{{...}} --> id18(merge)
-
-%% Recursão da mesclagem 1
-id17(merge) --> id19(merge)
-id18(merge) --> id19(merge)
-
-%% Mesclagem 2
-id14{{...}} --> id20(merge)
-id15{{...}} --> id20(merge)
-id15{{...}} --> id21(merge)
-id16{{...}} --> id21(merge)
-
-%% Recursão da mesclagem 2
-id20(merge) --> id22(merge)
-id21(merge) --> id22(merge)
-
-%% Finalização
-id19(merge) --> id23(merge)
-id22(merge) --> id23(merge)
-id23(merge) --> id24(get_median)
+%% Redução
+frequencies_1 --> id2((sum))
+frequencies_2 --> id2((sum))
+frequencies_2 --> id3((sum))
+frequencies_n --> id3((sum))
+id2((sum)) --> frequencies
+id3((sum)) --> frequencies
+frequencies --> get_median
 ```
 
 ### Comunicação
 
-Para este problema, a comunicação segue o fluxo de dados do grafo de dependências das tarefas. Em geral, a comunicação entre tarefas ocorre nas fases de mesclagem, porém essa sempre é realizada por apenas uma tarefa e, como tal, não há regiões críticas a serem consideradas. Além disso, como cada tarefa recebe uma partição disjunta das restantes, não há compartilhamento de secções entre elas, porém podem ocorrer problemas de falso compartilhamento ao utilizar *cacheamento* dos dados.
-
-Novamento podemos replicar o grafo de dependências:
-
-
-```mermaid
-%% Paralelização do problema do desvio padrão
-
-%% Tipo de grafo
-graph TD 
-
-%% Inicialização
-id0[(read_data)] --> id26(flatten_data)
-id26(flatten_data) --> id1(divide)
-id26(flatten_data) --> id2(divide)
-
-%% Divisão 1
-id1(divide) --> id3(divide)
-id1(divide) --> id4(divide)
-id1(divide) --> id5{{...}}
-id1(divide) --> id6(divide)
-
-%% Divisão 2
-id2(divide) --> id7(divide)
-id2(divide) --> id8(divide)
-id2(divide) --> id25{{...}}
-id2(divide) --> id10(divide)
-
-%% Recursão da divisão 1 ...
-id3(divide) --> id11{{...}}
-id4(divide) --> id12{{...}}
-id6(divide) --> id13{{...}}
-
-%% Recursão da divisão 2 ...
-id7(divide) --> id14{{...}}
-id8(divide) --> id15{{...}}
-id10(divide) --> id16{{...}}
-
-%% Mesclagem 1
-id11{{...}} --> id17(merge)
-id12{{...}} --> id17(merge)
-id12{{...}} --> id18(merge)
-id13{{...}} --> id18(merge)
-
-%% Recursão da mesclagem 1
-id17(merge) --> id19(merge)
-id18(merge) --> id19(merge)
-
-%% Mesclagem 2
-id14{{...}} --> id20(merge)
-id15{{...}} --> id20(merge)
-id15{{...}} --> id21(merge)
-id16{{...}} --> id21(merge)
-
-%% Recursão da mesclagem 2
-id20(merge) --> id22(merge)
-id21(merge) --> id22(merge)
-
-%% Finalização
-id19(merge) --> id23(merge)
-id22(merge) --> id23(merge)
-id23(merge) --> id24(get_median)
-```
+Para este problema, a comunicação segue o fluxo de dados do grafo de dependências das tarefas. Em geral, a comunicação entre tarefas ocorre nas fases de redução binária. Além disso, como cada tarefa recebe uma partição disjunta das restantes, não há compartilhamento de secções entre elas, porém podem ocorrer problemas de falso compartilhamento ao utilizar *cacheamento* dos dados.
 
 ### Aglomeração
 
-Devem ser considerados tantos processos quanto unidades de processamento existentes no sistema computacional em uso. Assim sendo, as tarefas de mesclagem podem ser disponibilizadas em uma *pool*, sendo consumidas pelos processos conforme demanda de execução. Entretanto, o achatamento dos dados e a obtenção da mediana após ordenação dos dados devem ser, ambos, feitos por único processo.
-
+Devem ser considerados tantos processos quanto unidades de processamento existentes no sistema computacional em uso. Assim sendo, as tarefas de contagem de frequências podem ser disponibilizadas em uma *pool*, sendo consumidas pelos processos conforme demanda de execução. Em geral, cada tarefa possuirá seu próprio vetor de frequências e, como tal, não há regiões críticas. Entretanto, a obtenção da mediana deve ser feita por único processo, uma vez que sua execução é estritamente sequencial.
 ## Mapeamentos
 
 Em todos os casos, uma vez que os processadores são homogêneos, os processos serão divididos igualmente entre os processadores. 

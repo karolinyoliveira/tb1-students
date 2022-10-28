@@ -637,7 +637,6 @@ int main(void)
     free_int_matrix(merged_region_grades, R);
     free(merged_country_grades);
 
-    /*
     // Para cálculo da média de tempo
     for(iteration=0; iteration<NUM_ATTEMPTS; ++iteration){
 
@@ -687,7 +686,6 @@ int main(void)
     // Finalização
     mean_time = get_mean(times, NUM_ATTEMPTS);
     printf("Tempo de resposta sem considerar E/S, em segundos: %.3lfs\n", mean_time);
-    */
     free_grades(grades, R, C);
     return EXIT_SUCCESS;
 }
