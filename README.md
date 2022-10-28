@@ -1270,4 +1270,17 @@ Em todos os casos, uma vez que os processadores são homogêneos, os processos s
 
 **Resposta para Q03:**
 
-# Speedup e eficiência
+Para cálculo de speedup, realizamos testes com os valores apresentados na tabela a seguir, com p = 8
+# Speedup e eficiência com p = 8
+| Sequencial | Paralelo | Valores | Speedup |
+| --- | --- | --- | --- |
+| 0.156s | 0.266s |200 200 200 0 | 0.193s
+| 0.031s | 0.062s |100 100 100 0 |0.034s
+| 0.000s | 0.001s |10 10 10 0 |
+
+# Speedup e eficiência com p = 1
+| Sequencial | Paralelo | Valores | Eficiência |
+| --- | --- | --- | --- |
+| 0.156s | 0.266s |200 200 200 0 |
+| 0.031s | 0.062s |100 100 100 0 |
+| 0.000s | 0.001s |10 10 10 0 |
